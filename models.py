@@ -1,18 +1,21 @@
-from os import listdir
-import argparse
+from torchvision import models
+from pytorch import nn
 
-def get_args():
-    parser = argparse.ArgumentParser(description='Process paramaters for model learning')
-    parser.add_argument('--view_type', type=str, help='axial/coronal/sagittal')
-    parser.add_argument('--abnormality_type', type=str, help='abnormal/acl/meniscus')
-    parser.add_argument('--dataset_path', type=str, help='')
-    parser.add_argument('--pretrained_model_type', type=str, help='Type of model used for feature extraction AlexNet/Resnet/Inception')
-    parser.add_argument('--batchsize', type=int, help='')
-    args = vars(parser.parse_args())
-    return args
+def get_pretrained_model(model_name: str):
+    '''
+    Downloads pretrained model from PyTorch, changes its last layer
+    and returns it.
 
-if __name__ == "__main__":
-    args = get_args()
-    dataset_path = args["dataset_path"]
-    files = listdir(dataset_path)
-    print(files)
+    Parameters
+    ----------
+    model_name: str
+        indicator which of PyTorch pretrained model should be returned
+    '''
+
+    if model_name:
+        model = models.resnet18(pretrained=True)
+        model.fc = nn.Identity()
+    else:
+        raise Exception(f"Pretrained model type not found: {model_name}")
+
+    return model
