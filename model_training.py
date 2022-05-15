@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
-from models import get_pretrained_model
+from pretrained_models import get_pretrained_model
 
 def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
