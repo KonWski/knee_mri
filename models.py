@@ -1,5 +1,5 @@
 from torchvision import models
-from pytorch import nn
+from torch import nn
 
 def get_pretrained_model(model_name: str):
     '''
