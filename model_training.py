@@ -28,6 +28,7 @@ def get_args():
 
     return args
 
+
 class MRDataset(data.Dataset):
     '''
     Attributes
@@ -103,5 +104,7 @@ def train_model():
     '''
     pass
 
+
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     args = get_args()
