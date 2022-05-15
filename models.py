@@ -8,12 +8,11 @@ def get_args():
     parser.add_argument('--dataset_path', type=str, help='')
     parser.add_argument('--pretrained_model_type', type=str, help='Type of model used for feature extraction AlexNet/Resnet/Inception')
     parser.add_argument('--batchsize', type=int, help='')
-    args = parser.parse_args()
+    args = vars(parser.parse_args())
     return args
 
 if __name__ == "__main__":
     args = get_args()
-    print(args)
     dataset_path = args["dataset_path"]
     files = listdir(dataset_path)
     print(files)
