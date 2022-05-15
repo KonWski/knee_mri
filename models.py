@@ -1,7 +1,7 @@
 from os import listdir
 import argparse
 
-def parse_args():
+def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
     parser.add_argument('--view_type', type=str, help='axial/coronal/sagittal')
     parser.add_argument('--abnormality_type', type=str, help='abnormal/acl/meniscus')
@@ -12,7 +12,7 @@ def parse_args():
     return args
 
 if __name__ == "__main__":
-    args = parse_args()
+    args = get_args()
     dataset_path = args["dataset_path"]
     files = listdir(dataset_path)
     print(files)
