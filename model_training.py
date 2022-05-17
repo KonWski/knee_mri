@@ -2,8 +2,10 @@ import os
 import pandas as pd
 import numpy as np
 import logging
+from sklearn.utils import shuffle
 import torch
 from torch import nn
+from torch.optim import SGD
 import torch.nn.functional as F
 import torch.utils.data as data
 from torch.utils.data import DataLoader
@@ -14,9 +16,11 @@ def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
     parser.add_argument('--view_type', type=str, help='axial/coronal/sagittal')
     parser.add_argument('--abnormality_type', type=str, help='abnormal/acl/meniscus')
-    parser.add_argument('--dataset_path', type=str, help='')
+    parser.add_argument('--root_dir', type=str, help='root_dir/view_type')
     parser.add_argument('--pretrained_model_type', type=str, help='Type of model used for feature extraction AlexNet/Resnet/Inception')
-    parser.add_argument('--batchsize', type=int, help='')
+    parser.add_argument('--batchsize', type=int, help='Number of images in batch')
+    parser.add_argument('--n_epochs', type=int, help='Number of epochs')
+
     args = vars(parser.parse_args())
     
     logging.info(8*"-")
@@ -29,7 +33,7 @@ def get_args():
     return args
 
 
-class MRDataset(data.Dataset):
+class MriDataset(data.Dataset):
     '''
     Attributes
     ----------
@@ -75,7 +79,7 @@ class MRDataset(data.Dataset):
         return image, label
 
 
-class MRNet(nn.Module):
+class MriNet(nn.Module):
     
     def __init__(self, pretrained_model_type):
         super().__init__()
@@ -98,13 +102,52 @@ class MRNet(nn.Module):
         output = self.classifier(flattened_features)
         return output
 
-def train_model():
+
+def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_type, batch_size, n_epochs):
     '''
     trains model for recognising selected abnormality on images taken from choosen view
     '''
-    pass
 
+    # dataset and loader
+    train_dataset = MriDataset(root_dir, True, view_type, abnormality_type, transform=None)
+    train_loader = torch.utils.data.Dataloader(train_dataset, batch_size, shuffle=True)
+
+    # model, optimizer, criterion
+    model = MriNet(pretrained_model_type)
+    optimizer = SGD(model.parameters(), lr=0.01)
+    criterion = nn.CrossEntropyLoss()
+
+    # Set model to training mode
+    model.train()
+    for param in model.parameters:
+        param.requires_grad = True
+
+    for epoch in range(n_epochs):
+
+        logging.info(f"Epoch {epoch}")
+        running_loss = 0.0
+        
+        for id, batch in enumerate(train_loader, 0):
+            
+            images, labels = batch
+            optimizer.zero_grad()
+
+            # calculate loss
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            # print statistics
+            running_loss += loss.item()
+            logging.info(f"Loss: {running_loss}")
+
+    return model
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     args = get_args()
+
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    model = train_model(device, args["root_dir"], args["view_type"], args["abnormality_type"], 
+                            args["pretrained_model_type"], args["batch_size"], args["n_epochs"])
