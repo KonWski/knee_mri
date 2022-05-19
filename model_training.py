@@ -59,10 +59,10 @@ class MriDataset(data.Dataset):
 
         subfolder = "train" if train else "valid"
         self.dataset_path = f"{self.root_dir}/{subfolder}/{view_type}/"
-        self.img_labels = pd.read_csv(f"{self.root_dir}/{subfolder}-abnormal.csv", 
+        self.labels = pd.read_csv(f"{self.root_dir}/{subfolder}-abnormal.csv", 
                                       names=["id", "abnormality"], 
                                       dtype={"id": str, "abnormality": int})
-        self.img_labels = self.img_labels.set_index("id")
+        self.labels = self.labels.set_index("id")
         self.transform = transform
 
     def __len__(self):
@@ -71,7 +71,7 @@ class MriDataset(data.Dataset):
     def __getitem__(self, index):
 
         image = np.load(f"{self.dataset_path}/{index}.npy")
-        label = self.img_labels.loc[index]["abnormality"]
+        label = self.labels.loc[index]["abnormality"]
         
         if self.transform:
             image = self.transform(image)
