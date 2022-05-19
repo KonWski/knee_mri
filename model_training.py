@@ -18,7 +18,7 @@ def get_args():
     parser.add_argument('--abnormality_type', type=str, help='abnormal/acl/meniscus')
     parser.add_argument('--root_dir', type=str, help='root_dir/view_type')
     parser.add_argument('--pretrained_model_type', type=str, help='Type of model used for feature extraction AlexNet/Resnet/Inception')
-    parser.add_argument('--batchsize', type=int, help='Number of images in batch')
+    parser.add_argument('--batch_size', type=int, help='Number of images in batch')
     parser.add_argument('--n_epochs', type=int, help='Number of epochs')
 
     args = vars(parser.parse_args())
