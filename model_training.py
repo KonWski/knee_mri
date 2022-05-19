@@ -110,7 +110,7 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
 
     # dataset and loader
     train_dataset = MriDataset(root_dir, True, view_type, abnormality_type, transform=None)
-    train_loader = torch.utils.data.Dataloader(train_dataset, batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
 
     # model, optimizer, criterion
     model = MriNet(pretrained_model_type)
