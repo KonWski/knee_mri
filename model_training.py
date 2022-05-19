@@ -119,7 +119,7 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
 
     # Set model to training mode
     model.train()
-    for param in model.parameters:
+    for param in model.parameters():
         param.requires_grad = True
 
     for epoch in range(n_epochs):
