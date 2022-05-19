@@ -58,7 +58,7 @@ class MriDataset(data.Dataset):
         self.abnormality_type = abnormality_type
 
         subfolder = "train" if train else "valid"
-        self.dataset_path = f"{self.root_dir}/{subfolder}/{view_type}/"
+        self.dataset_path = f"{self.root_dir}/{subfolder}/{view_type}"
         self.labels = pd.read_csv(f"{self.root_dir}/{subfolder}-abnormal.csv", 
                                       names=["id", "abnormality"], 
                                       dtype={"id": str, "abnormality": int})
