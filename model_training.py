@@ -76,6 +76,7 @@ class MriDataset(data.Dataset):
         label = self.labels.loc[df_index]["abnormality"]
         
         if self.transform:
+            print(image.shape)
             image = self.transform(image)
 
         return image, label
