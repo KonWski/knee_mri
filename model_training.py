@@ -69,8 +69,9 @@ class MriDataset(data.Dataset):
         return len(self.labels)
 
     def __getitem__(self, index):
-
-        image = np.load(f"{self.dataset_path}/{index}.npy")
+        
+        image_index = "0" * (4 - len(index))
+        image = np.load(f"{self.dataset_path}/{image_index}.npy")
         label = self.labels.loc[index]["abnormality"]
         
         if self.transform:
