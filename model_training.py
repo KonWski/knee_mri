@@ -11,6 +11,7 @@ import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
 from pretrained_models import get_pretrained_model
+import torchvision.transforms as transforms
 
 def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
@@ -109,8 +110,14 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
     trains model for recognising selected abnormality on images taken from choosen view
     '''
 
+    # transformations
+    data_transforms = transforms.Compose(
+    [transforms.ToTensor()
+     # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+     ])
+
     # dataset and loader
-    train_dataset = MriDataset(root_dir, True, view_type, abnormality_type, transform=None)
+    train_dataset = MriDataset(root_dir, True, view_type, abnormality_type, transform=data_transforms)
     train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
 
     # model, optimizer, criterion
