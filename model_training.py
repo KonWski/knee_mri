@@ -112,7 +112,8 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
 
     # transformations
     data_transforms = transforms.Compose(
-    [transforms.ToTensor()
+    [transforms.ToTensor(),
+    transforms.Lambda(lambda x: x.permute(2, 0, 1, 3))
      # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
      ])
 
