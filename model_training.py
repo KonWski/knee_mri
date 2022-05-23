@@ -72,7 +72,7 @@ class MriDataset(data.Dataset):
         
         df_index = "0" * (4 - len(str(index))) + str(index)
         image = np.load(f"{self.dataset_path}/{df_index}.npy")
-        label = self.labels.loc[index]["abnormality"]
+        label = self.labels.loc[df_index]["abnormality"]
         
         if self.transform:
             image = self.transform(image)
