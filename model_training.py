@@ -76,7 +76,6 @@ class MriDataset(data.Dataset):
         label = self.labels.loc[df_index]["abnormality"]
         
         if self.transform:
-            print(image.shape)
             image = self.transform(image)
 
         return image, label
@@ -114,7 +113,7 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
     # transformations
     data_transforms = transforms.Compose(
     [transforms.ToTensor(),
-    transforms.Lambda(lambda x: x.permute(2, 0, 1, 3))
+    # transforms.Lambda(lambda x: x.permute(2, 0, 1, 3))
      # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
      ])
 
