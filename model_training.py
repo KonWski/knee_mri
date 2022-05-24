@@ -90,9 +90,10 @@ class MriNet(nn.Module):
         self.classifier = nn.Linear(256, 2)
 
     def forward(self, x):
-        print(f"X before squeeze: {x.size()}")
-        x = torch.squeeze(x, dim=0)
-        print(f"X after squeeze: {x.size()}")
+        # print(f"X before squeeze: {x.size()}")
+        # x = torch.squeeze(x, dim=0)
+        # print(f"X after squeeze: {x.size()}")
+        
         features = self.pretrained_model.features(x)
         print(f"features after pretrained_model: {features.size()}")
         pooled_features = self.pooling_layer(features)
@@ -111,11 +112,12 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
     '''
 
     # transformations
-    data_transforms = transforms.Compose(
-    [transforms.ToTensor(),
-    # transforms.Lambda(lambda x: x.permute(2, 0, 1, 3))
-     # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-     ])
+    data_transforms = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Lambda(lambda x: torch.unsqueeze(x, dim=0)),
+        transforms.Lambda(lambda x: x.permute(2, 0, 1, 3)),
+        transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1))
+        ])
 
     # dataset and loader
     train_dataset = MriDataset(root_dir, True, view_type, abnormality_type, transform=data_transforms)
