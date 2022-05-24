@@ -93,8 +93,8 @@ class MriNet(nn.Module):
         # print(f"X before squeeze: {x.size()}")
         # x = torch.squeeze(x, dim=0)
         # print(f"X after squeeze: {x.size()}")
-        
-        features = self.pretrained_model.features(x)
+        print(f"features before pretrained_model: {features.size()}")
+        features = self.pretrained_model(x)
         print(f"features after pretrained_model: {features.size()}")
         pooled_features = self.pooling_layer(features)
         print(f"pooled_features after pooling_layer: {pooled_features.size()}")
