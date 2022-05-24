@@ -90,10 +90,10 @@ class MriNet(nn.Module):
         self.classifier = nn.Linear(256, 2)
 
     def forward(self, x):
-        # print(f"X before squeeze: {x.size()}")
-        # x = torch.squeeze(x, dim=0)
-        # print(f"X after squeeze: {x.size()}")
-        print(f"features before pretrained_model: {x.size()}")
+        print(f"X before squeeze: {x.size()}")
+        x = torch.squeeze(x, dim=0)
+        print(f"X after squeeze: {x.size()}")
+        # print(f"features before pretrained_model: {x.size()}")
         features = self.pretrained_model(x)
         print(f"features after pretrained_model: {features.size()}")
         pooled_features = self.pooling_layer(features)
