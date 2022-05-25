@@ -86,8 +86,10 @@ class MriNet(nn.Module):
     def __init__(self, pretrained_model_type):
         super().__init__()
         self.pretrained_model = get_pretrained_model(pretrained_model_type)
-        self.pooling_layer = nn.AdaptiveAvgPool2d(1)
-        self.classifier = nn.Linear(256, 2)
+        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((15, 15))
+        self.max_pooling_layer = nn.AdaptiveMaxPool2d((15, 15))
+        self.flatten = nn.Flatten()
+        self.classifier = nn.Linear(450, 2)
 
     def forward(self, x):
         print(f"X before squeeze: {x.size()}")
@@ -96,6 +98,24 @@ class MriNet(nn.Module):
         # print(f"features before pretrained_model: {x.size()}")
         features = self.pretrained_model(x)
         print(f"features after pretrained_model: {features.size()}")
+
+        features_avg = self.avg_pooling_layer(features)
+        features_max = self.max_pooling_layer(features)
+        print(f"features_avg shape: {features_avg.shape}")
+        print(f"features_max shape: {features_max.shape}")
+        features_avg = self.flatten(features_avg)
+        features_max = self.flatten(features_max)
+        print(f"features_avg shape: {features_avg.shape}")
+        print(f"features_max shape: {features_max.shape}")
+
+
+        features_avg = torch.squeeze(features_avg, dim=0)
+        features_max = torch.squeeze(features_max, dim=0)
+
+        features_concat = torch.cat((features_avg, features_max), dim=0)
+        print(f"features_concat shape: {features_concat.shape}")
+        output = self.classifier(flattened_features)
+
         pooled_features = self.pooling_layer(features)
         print(f"pooled_features after pooling_layer: {pooled_features.size()}")
         pooled_features = pooled_features.view(pooled_features.size(0), -1)
