@@ -98,7 +98,8 @@ class MriNet(nn.Module):
         # print(f"features before pretrained_model: {x.size()}")
         features = self.pretrained_model(x)
         print(f"features after pretrained_model: {features.size()}")
-
+        features = torch.unsqueeze(features, dim=0)
+        print(f"features after unsqueeze: {features.size()}")
         features_avg = self.avg_pooling_layer(features)
         features_max = self.max_pooling_layer(features)
         print(f"features_avg shape: {features_avg.shape}")
