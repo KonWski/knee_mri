@@ -99,34 +99,22 @@ class MriNet(nn.Module):
 
     def forward(self, x):
 
-        print(f"X before squeeze: {x.size()}")
-        x = torch.squeeze(x, dim=0)
-        print(f"X after squeeze: {x.size()}")
-        
-        features = self.pretrained_model(x)
-        print(f"features after pretrained_model: {features.size()}")
-        
+        x = torch.squeeze(x, dim=0)        
+        features = self.pretrained_model(x)        
         features = torch.unsqueeze(features, dim=0)
-        print(f"features after unsqueeze: {features.size()}")
         
         features_avg = self.avg_pooling_layer(features)
         features_max = self.max_pooling_layer(features)
-        print(f"features_avg shape: {features_avg.shape}")
-        print(f"features_max shape: {features_max.shape}")
 
         features_avg = self.flatten(features_avg)
         features_max = self.flatten(features_max)
-        print(f"features_avg shape: {features_avg.shape}")
-        print(f"features_max shape: {features_max.shape}")
         
         features_avg = torch.squeeze(features_avg, dim=0)
         features_max = torch.squeeze(features_max, dim=0)
         features_concat = torch.cat((features_avg, features_max), dim=0)
         features_concat = torch.unsqueeze(features_concat, dim=0)
-        print(f"features_concat shape: {features_concat.shape}")
         
         output = self.classifier(features_concat)
-        print(output)
         return output
 
 
@@ -165,6 +153,8 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
         for id, batch in enumerate(train_loader, 0):
             
             images, labels = batch
+            inputs = inputs.to(device)
+            labels = labels.to(device)
             optimizer.zero_grad()
 
             # calculate loss
