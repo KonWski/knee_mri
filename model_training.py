@@ -146,33 +146,53 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
 
     for epoch in range(n_epochs):
 
-        logging.info(f"Epoch {epoch}")
-        running_loss = 0.0
-        running_corrects = 0
-        
-        for id, batch in enumerate(train_loader, 0):
+        for state in ["train", "test"]:
+
+            logging.info(f"Epoch {epoch}, State: {state}")
+
+            running_loss = 0.0
+            running_corrects = 0
             
-            images, labels = batch
-            images = images.to(device)
-            labels = labels.to(device)
-            optimizer.zero_grad()
+            if state == "train":
+                
+                # dataset and loader
+                dataset = MriDataset(root_dir, True, view_type, abnormality_type, transform = data_transforms)
+                len_dataset = len(dataset)
+                dataloader = DataLoader(dataset, batch_size, shuffle=True)
+                model.train()
+            
+            else:
 
-            # calculate loss
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            _, preds = torch.max(outputs, 1)
+                # dataset and loader
+                dataset = MriDataset(root_dir, False, view_type, abnormality_type, transform = data_transforms)
+                len_dataset = len(dataset)
+                dataloader = DataLoader(dataset, batch_size, shuffle=True)
+                model.eval()
 
-            loss.backward()
-            optimizer.step()
+            for id, batch in enumerate(dataloader, 0):
+                logging.info(f"Batch: {batch}")
+                images, labels = batch
+                images = images.to(device)
+                labels = labels.to(device)
+                optimizer.zero_grad()
 
-            # print statistics
-            running_loss += loss.item()
-            running_corrects += torch.sum(preds == labels.data)
+                # calculate loss
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+                _, preds = torch.max(outputs, 1)
 
-        # print epoch statistics
-        epoch_loss = round(running_loss / len_train_dataset, 2)
-        epoch_acc = round(running_corrects / len_train_dataset, 2)
-        print("Loss: {epoch_loss}, accuracy: {epoch_acc}")
+                if state == "train":
+                    loss.backward()
+                    optimizer.step()
+
+                # print statistics
+                running_loss += loss.item()
+                running_corrects += torch.sum(preds == labels.data)
+
+            # print epoch statistics
+            epoch_loss = round(running_loss / len_dataset, 2)
+            epoch_acc = round(running_corrects / len_dataset, 2)
+            print("Loss: {epoch_loss}, accuracy: {epoch_acc}")
 
     return model
 
