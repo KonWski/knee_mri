@@ -153,7 +153,7 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
         for id, batch in enumerate(train_loader, 0):
             
             images, labels = batch
-            inputs = inputs.to(device)
+            images = images.to(device)
             labels = labels.to(device)
             optimizer.zero_grad()
 
