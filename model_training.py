@@ -79,6 +79,11 @@ class MriDataset(data.Dataset):
         if self.transform:
             image = self.transform(image)
 
+        if label == 1:
+            label = torch.Tensor([[0, 1]])
+        elif label == 0:
+            label = torch.Tensor([[1, 0]])
+
         return image, label
 
 
@@ -90,7 +95,7 @@ class MriNet(nn.Module):
         self.avg_pooling_layer = nn.AdaptiveAvgPool2d((15, 15))
         self.max_pooling_layer = nn.AdaptiveMaxPool2d((15, 15))
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(450, 1)
+        self.classifier = nn.Linear(450, 2)
 
     def forward(self, x):
 
@@ -159,7 +164,7 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
         for id, batch in enumerate(train_loader, 0):
             
             images, labels = batch
-            labels = torch.unsqueeze(labels, dim=0)
+
             print(f"labels: {labels}")
             optimizer.zero_grad()
 
