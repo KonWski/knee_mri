@@ -119,14 +119,6 @@ class MriNet(nn.Module):
         print(f"features_concat shape: {features_concat.shape}")
         
         output = self.classifier(features_concat)
-
-        pooled_features = self.pooling_layer(features)
-        print(f"pooled_features after pooling_layer: {pooled_features.size()}")
-        pooled_features = pooled_features.view(pooled_features.size(0), -1)
-        print(f"pooled_features after view: {pooled_features.size()}")
-        flattened_features = torch.max(pooled_features, 0, keepdim=True)[0]
-        print(f"flattened_features after view: {flattened_features.size()}")
-        output = self.classifier(flattened_features)
         return output
 
 
