@@ -158,6 +158,7 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
         for id, batch in enumerate(train_loader, 0):
             
             images, labels = batch
+            print(f"labels: {labels}")
             optimizer.zero_grad()
 
             # calculate loss
