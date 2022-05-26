@@ -89,7 +89,7 @@ class MriNet(nn.Module):
         self.avg_pooling_layer = nn.AdaptiveAvgPool2d((15, 15))
         self.max_pooling_layer = nn.AdaptiveMaxPool2d((15, 15))
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(450, 2)
+        self.classifier = nn.Linear(450, 1)
 
     def forward(self, x):
 
@@ -119,6 +119,7 @@ class MriNet(nn.Module):
         print(f"features_concat shape: {features_concat.shape}")
         
         output = self.classifier(features_concat)
+        print(output)
         return output
 
 
