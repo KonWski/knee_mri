@@ -15,6 +15,9 @@ def get_pretrained_model(model_name: str):
     if model_name:
         model = models.resnet18(pretrained=True)
         model.fc = nn.Identity()
+
+        for param in model.parameters():
+            param.requires_grad = False
     else:
         raise Exception(f"Pretrained model type not found: {model_name}")
 

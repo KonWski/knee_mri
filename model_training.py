@@ -145,6 +145,7 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
 
     # dataset and loader
     train_dataset = MriDataset(root_dir, True, view_type, abnormality_type, transform=data_transforms)
+    len_train_dataset = len(train_dataset)
     train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
 
     # model, optimizer, criterion
@@ -152,32 +153,36 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
     optimizer = SGD(model.parameters(), lr=0.01)
     criterion = nn.CrossEntropyLoss()
 
-    # Set model to training mode
+    # set model to training mode
     model.train()
-    for param in model.parameters():
-        param.requires_grad = True
 
     for epoch in range(n_epochs):
 
         logging.info(f"Epoch {epoch}")
         running_loss = 0.0
+        running_corrects = 0
         
         for id, batch in enumerate(train_loader, 0):
             
             images, labels = batch
-
-            print(f"labels: {labels}")
             optimizer.zero_grad()
 
             # calculate loss
             outputs = model(images)
             loss = criterion(outputs, labels)
+            _, preds = torch.max(outputs, 1)
+
             loss.backward()
             optimizer.step()
 
             # print statistics
             running_loss += loss.item()
-            logging.info(f"Loss: {running_loss}")
+            running_corrects += torch.sum(preds == labels.data)
+
+        # print epoch statistics
+        epoch_loss = round(running_loss / len_train_dataset, 2)
+        epoch_acc = round(running_corrects / len_train_dataset, 2)
+        print("Loss: {epoch_loss}, accuracy: {epoch_acc}")
 
     return model
 
