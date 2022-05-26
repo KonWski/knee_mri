@@ -170,7 +170,7 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
                 model.eval()
 
             for id, batch in enumerate(dataloader, 0):
-                logging.info(f"Batch: {id}")
+                logging.info(f"Batch: {id} / {len_dataset}")
                 images, labels = batch
                 images = images.to(device)
                 labels = labels.to(device)
