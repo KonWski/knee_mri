@@ -51,14 +51,14 @@ class MriDataset(data.Dataset):
         set of transformations used for image preprocessing
     '''
 
-    def __init__(self, root_dir, train, view_type, abnormality_type, transform=None):
+    def __init__(self, root_dir, state, view_type, abnormality_type, transform=None):
         super().__init__()
         self.root_dir = root_dir
-        self.train = train
+        self.state = state
         self.view_type = view_type
         self.abnormality_type = abnormality_type
 
-        subfolder = "train" if train else "valid"
+        subfolder = "train" if state == "train" else "valid"
         self.dataset_path = f"{self.root_dir}/{subfolder}/{view_type}"
         self.labels = pd.read_csv(f"{self.root_dir}/{subfolder}-abnormal.csv", 
                                       names=["id", "abnormality"], 
@@ -152,21 +152,14 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
 
             running_loss = 0.0
             running_corrects = 0
-            
-            if state == "train":
-                
-                # dataset and loader
-                dataset = MriDataset(root_dir, True, view_type, abnormality_type, transform = data_transforms)
-                len_dataset = len(dataset)
-                dataloader = DataLoader(dataset, batch_size, shuffle=True)
-                model.train()
-            
-            else:
 
-                # dataset and loader
-                dataset = MriDataset(root_dir, False, view_type, abnormality_type, transform = data_transforms)
-                len_dataset = len(dataset)
-                dataloader = DataLoader(dataset, batch_size, shuffle=True)
+            dataset = MriDataset(root_dir, state, view_type, abnormality_type, transform = data_transforms)
+            len_dataset = len(dataset)
+            dataloader = DataLoader(dataset, batch_size, shuffle=True)
+
+            if state == "train":
+                model.train()
+            else:
                 model.eval()
 
             for id, batch in enumerate(dataloader, 0):
