@@ -21,9 +21,19 @@ def get_args():
     parser.add_argument('--pretrained_model_type', type=str, help='Type of model used for feature extraction AlexNet/Resnet/Inception')
     parser.add_argument('--batch_size', type=int, help='Number of images in batch')
     parser.add_argument('--n_epochs', type=int, help='Number of epochs')
+    parser.add_argument('--model_path', type=str, help='Path to directory to save/load model state dictionary')
+    parser.add_argument('--load_model', type=str, help='Y -> continue learning using state_dict, train_history in save_path')
 
     args = vars(parser.parse_args())
     
+    # parse str to boolean
+    str_true = ["Y", "y", "Yes", "yes", "true", "True"]
+    if args["load_model"] in str_true:
+        args["load_model"] = True
+    else:
+        args["load_model"] = False
+
+    # print input parameters
     logging.info(8*"-")
     logging.info("PARAMETERS")
     logging.info(8*"-")
@@ -118,7 +128,52 @@ class MriNet(nn.Module):
         return output
 
 
-def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_type, batch_size, n_epochs):
+def load_checkpoint(model: nn.Module, optimizer: torch.optim, checkpoint: dict):
+    '''
+    loads model checkpoint from given path
+
+    Parameters
+    ----------
+    model : nn.Module
+            One of models defined in pretrained_models scripts
+    optimizer : torch.optim
+    checkpoint: dict
+                parameters retrieved from training process i.e.:
+                - model_state_dict
+                - optimizer_state_dict
+                - last finished number of epoch
+                - loss from last epoch training
+                - accuracy from last epoch training
+    '''
+
+    # load parameters from checkpoint
+    model.load_state_dict(checkpoint["model_state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    epoch = checkpoint["epoch"]
+    loss = checkpoint["loss"]
+    acc = checkpoint["acc"]
+
+    # print loaded parameters
+    logging.info(8*"-")
+    logging.info(f"Loaded model from checkpoint: {}")
+    logging.info(f"Epoch: {epoch}")
+    logging.info(f"Loss: {loss}")
+    logging.info(f"Accuracy: {acc}")
+    logging.info(8*"-")
+
+    return model, optimizer, epoch, loss, acc
+
+
+def save_checkpoint(model: nn.Module, optimizer: torch.optim, loss: float, acc: float):
+    '''
+    saves model checkpoint from given path
+    '''
+
+    pass
+
+
+def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_type, 
+        batch_size, n_epochs, load_model, checkpoint=None):
     '''
     trains model for recognising selected abnormality on images taken from choosen view
     '''
@@ -131,14 +186,15 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
         transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1))
         ])
 
-    # dataset and loader
-    train_dataset = MriDataset(root_dir, True, view_type, abnormality_type, transform=data_transforms)
-    len_train_dataset = len(train_dataset)
-    train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
+    # initiate or load model, criterion
+    if load_model and checkpoint is not None:
+        model = checkpoint["model_state_dict"]
+        optimizer = checkpoint["optimizer_state_dict"]
+    
+    else:
+        model = MriNet(pretrained_model_type)
+        optimizer = SGD(model.parameters(), lr=0.01)
 
-    # model, optimizer, criterion
-    model = MriNet(pretrained_model_type)
-    optimizer = SGD(model.parameters(), lr=0.01)
     criterion = nn.CrossEntropyLoss()
 
     # set model to training mode
@@ -194,5 +250,7 @@ if __name__ == "__main__":
     args = get_args()
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+
     model = train_model(device, args["root_dir"], args["view_type"], args["abnormality_type"], 
-                            args["pretrained_model_type"], args["batch_size"], args["n_epochs"])
+                            args["pretrained_model_type"], args["batch_size"], args["n_epochs"], args["load_model"])
