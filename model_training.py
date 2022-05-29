@@ -315,7 +315,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             checkpoint[f"{state}_loss"] = epoch_loss
             checkpoint[f"{state}_acc"] = epoch_acc
 
-            print("Loss: {epoch_loss}, accuracy: {epoch_acc}")
+            logging.info(f"Loss: {epoch_loss}, accuracy: {epoch_acc}")
 
         # save checkpoint
         checkpoint["model_state_dict"] = model.state_dict()
