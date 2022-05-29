@@ -22,8 +22,8 @@ def get_args():
     parser.add_argument('--pretrained_model_type', type=str, help='Type of model used for feature extraction AlexNet/Resnet/Inception')
     parser.add_argument('--batch_size', type=int, help='Number of images in batch')
     parser.add_argument('--n_epochs', type=int, help='Number of epochs')
-    parser.add_argument('--model_path', type=str, help='Path to directory to save/load model state dictionary')
-    parser.add_argument('--load_model', type=str, help='Y -> continue learning using state_dict, train_history in save_path')
+    parser.add_argument('--model_path', type=str, default=None, help='Path to directory to save/load model state dictionary')
+    parser.add_argument('--load_model', type=str, default="N", help='Y -> continue learning using state_dict, train_history in save_path')
 
     args = vars(parser.parse_args())
     
@@ -180,60 +180,39 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
     return model, optimizer, epoch
 
 
-def save_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str, epoch: int, train_loss: float, 
-                        train_acc: float, test_loss: float, test_acc: float):
+def save_checkpoint(checkpoint: dict, model_path: str):
     '''
     saves model to checkpoint
 
     Parameters
     ----------
-    model : nn.Module
-            One of models defined in pretrained_models scripts
-    optimizer : torch.optim
+    checkpoint: dict
+            parameters retrieved from training process i.e.:
+            - model_state_dict
+            - optimizer_state_dict
+            - last finished number of epoch
+            - loss from last epoch training
+            - accuracy from last epoch training
+            - loss from last epoch testing
+            - accuracy from last epoch testing
+            - Save time
     model_path : str
                  Path to directory with checkpoints
-    epoch: int
-    train_loss : float
-    train_acc : float
-    test_loss : float
-    test_acc : float
-    model_path : str
-
-    Notes
-    -----
-    checkpoint: dict
-                parameters retrieved from training process i.e.:
-                - model_state_dict
-                - optimizer_state_dict
-                - last finished number of epoch
-                - loss from last epoch training
-                - accuracy from last epoch training
-                - loss from last epoch testing
-                - accuracy from last epoch testing
-                - Save time
     '''
 
-    checkpoint_path = f"{model_path}/{model.pretrained_model_type}_{epoch}"
+    checkpoint_path = f"{model_path}/{checkpoint['pretrained_model_type']}_{checkpoint['epoch']}"
 
     # save checkpoint
-    torch.save({
-                "model_state_dict": model.state_dict(),
-                "optimizer_state_dict": optimizer.state_dict(),
-                "train_loss": train_loss,
-                "train_acc": train_acc,
-                "test_loss": test_loss,
-                "test_acc": test_acc,
-                "epoch": epoch
-                }, checkpoint_path)
+    torch.save({checkpoint}, checkpoint_path)
 
     # new row in train history
     new_log = pd.DataFrame({
-                            "pretrained_model_type": model.pretrained_model_type, 
-                            "epoch": epoch,
-                            "train_loss": train_loss,
-                            "train_acc": train_acc,
-                            "test_loss": test_loss,
-                            "test_acc": test_acc,
+                            "pretrained_model_type": checkpoint["pretrained_model_type"], 
+                            "epoch": checkpoint["epoch"],
+                            "train_loss": checkpoint["train_loss"],
+                            "train_acc": checkpoint["train_acc"],
+                            "test_loss": checkpoint["test_loss"],
+                            "test_acc": checkpoint["test_acc"],
                             "checkpoint_path": checkpoint_path,
                             "save_dttm": datetime.now()
                             })
@@ -250,12 +229,12 @@ def save_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str, e
 
     logging.info(8*"-")
     logging.info(f"Saved model to checkpoint: {checkpoint_path}")
-    logging.info(f"Epoch: {epoch}")
+    logging.info(f"Epoch: {checkpoint['epoch']}")
     logging.info(8*"-")
 
 
-def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_type, 
-        batch_size, n_epochs, load_model, checkpoint=None):
+def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pretrained_model_type: str, 
+        batch_size: int, n_epochs: int, load_model: bool = False, model_path: str = None):
     '''
     trains model for recognising selected abnormality on images taken from choosen view
     '''
@@ -267,22 +246,22 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
         transforms.Lambda(lambda x: x.permute(2, 0, 1, 3)),
         transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1))
         ])
-
-    # initiate or load model, criterion
-    if load_model and checkpoint is not None:
-        model = checkpoint["model_state_dict"]
-        optimizer = checkpoint["optimizer_state_dict"]
     
-    else:
-        model = MriNet(pretrained_model_type)
-        optimizer = SGD(model.parameters(), lr=0.01)
-
+    # initiate model and optimizer
+    model = MriNet(pretrained_model_type)
+    optimizer = SGD(model.parameters(), lr=0.01)
     criterion = nn.CrossEntropyLoss()
+    start_epoch = 0
 
-    # set model to training mode
-    model.train()
+    # set weights if training process should be restarted
+    if load_model and model_path is not None:
+        model, optimizer, last_epoch = load_checkpoint(model, criterion, model_path)
+        start_epoch = last_epoch + 1
 
-    for epoch in range(n_epochs):
+    for epoch in range(start_epoch, n_epochs):
+
+        # future checkpoint
+        checkpoint = {"epoch": epoch, "pretrained_model_type": pretrained_model_type}
 
         for state in ["train", "test"]:
 
@@ -320,12 +299,21 @@ def train_model(device, root_dir, view_type, abnormality_type, pretrained_model_
                 running_loss += loss.item()
                 running_corrects += torch.sum(preds == labels.data)
 
-            # print epoch statistics
+            # save and print epoch statistics
             epoch_loss = round(running_loss / len_dataset, 2)
             epoch_acc = round(running_corrects / len_dataset, 2)
+            checkpoint[f"{state}_loss"] = epoch_loss
+            checkpoint[f"{state}_acc"] = epoch_acc
+
             print("Loss: {epoch_loss}, accuracy: {epoch_acc}")
 
+        # save checkpoint
+        checkpoint["model_state_dict"] = model.state_dict()
+        checkpoint["optimizer_state_dict"] = optimizer.state_dict()
+        save_checkpoint(checkpoint, model_path)
+
     return model
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
@@ -333,6 +321,6 @@ if __name__ == "__main__":
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-
     model = train_model(device, args["root_dir"], args["view_type"], args["abnormality_type"], 
-                            args["pretrained_model_type"], args["batch_size"], args["n_epochs"], args["load_model"])
+                            args["pretrained_model_type"], args["batch_size"], args["n_epochs"], 
+                            args["load_model"], args["model_path"])
