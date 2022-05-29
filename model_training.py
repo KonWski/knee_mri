@@ -78,7 +78,7 @@ class MriDataset(data.Dataset):
         self.dataset_path = f"{self.root_dir}/{subfolder}/{view_type}"
         self.labels = pd.read_csv(f"{self.root_dir}/{subfolder}-abnormal.csv", 
                                       names=["id", "abnormality"], 
-                                      dtype={"id": str, "abnormality": int})
+                                      dtype={"id": str, "abnormality": int}).head(20)
 
         self.labels = self.labels.set_index("id")
         self.transform = transform
