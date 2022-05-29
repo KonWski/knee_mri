@@ -286,8 +286,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             else:
                 model.eval()
 
-            for id, batch in enumerate(dataloader, 0):
-                
+            for id, batch in enumerate(dataloader):
+                print(f"id: {id}")
                 # progress bar
                 if id % 100 == 0 and id != 0:
                     progress = round((id / len_dataset) * 100, 1)    
