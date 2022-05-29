@@ -280,7 +280,12 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                 model.eval()
 
             for id, batch in enumerate(dataloader, 0):
-                logging.info(f"Batch: {id} / {len_dataset}")
+                
+                # progress bar
+                if id % 100 == 0 and id != 0:
+                    progress = (id / len_dataset) * 100    
+                    logging.info(f"Progress: {progress}%")
+                
                 images, labels = batch
                 images = images.to(device)
                 labels = labels.to(device)
