@@ -78,7 +78,7 @@ class MriDataset(data.Dataset):
         self.dataset_path = f"{self.root_dir}/{subfolder}/{view_type}"
         self.labels = pd.read_csv(f"{self.root_dir}/{subfolder}-abnormal.csv", 
                                       names=["id", "abnormality"], 
-                                      dtype={"id": str, "abnormality": int}).head(10)
+                                      dtype={"id": str, "abnormality": int})
 
         self.transform = transform
 
@@ -173,7 +173,6 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
     epoch = checkpoint["epoch"]    
 
     # print loaded parameters
-    logging.info(8*"-")
     logging.info(f"Loaded model from checkpoint: {checkpoint_path}")
     logging.info(f"Epoch: {epoch}")
     logging.info(f"Train loss: {checkpoint['train_loss']}")
