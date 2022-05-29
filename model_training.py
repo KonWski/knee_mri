@@ -212,14 +212,14 @@ def save_checkpoint(checkpoint: dict, model_path: str):
 
     # new row in train history
     new_log = pd.DataFrame({
-                            "pretrained_model_type": checkpoint["pretrained_model_type"], 
-                            "epoch": checkpoint["epoch"],
-                            "train_loss": checkpoint["train_loss"],
-                            "train_acc": checkpoint["train_acc"],
-                            "test_loss": checkpoint["test_loss"],
-                            "test_acc": checkpoint["test_acc"],
-                            "checkpoint_path": checkpoint_path,
-                            "save_dttm": datetime.now().strftime("%d.%m.%Y, %H:%M:%S")
+                            "pretrained_model_type": [checkpoint["pretrained_model_type"]], 
+                            "epoch": [checkpoint["epoch"]],
+                            "train_loss": [checkpoint["train_loss"]],
+                            "train_acc": [checkpoint["train_acc"]],
+                            "test_loss": [checkpoint["test_loss"]],
+                            "test_acc": [checkpoint["test_acc"]],
+                            "checkpoint_path": [checkpoint_path],
+                            "save_dttm": [datetime.now()]
                             })
 
     # check if file with training logs already exists
