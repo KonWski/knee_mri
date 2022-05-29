@@ -288,7 +288,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                 
                 # progress bar
                 if id % 100 == 0 and id != 0:
-                    progress = (id / len_dataset) * 100    
+                    progress = round((id / len_dataset) * 100, 1)    
                     logging.info(f"Progress: {progress}%")
                 
                 images, labels = batch
