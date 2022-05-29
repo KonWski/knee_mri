@@ -219,7 +219,7 @@ def save_checkpoint(checkpoint: dict, model_path: str):
                             "test_loss": checkpoint["test_loss"],
                             "test_acc": checkpoint["test_acc"],
                             "checkpoint_path": checkpoint_path,
-                            "save_dttm": datetime.now()
+                            "save_dttm": datetime.now().strftime("%d.%m.%Y, %H:%M:%S")
                             })
 
     # check if file with training logs already exists
