@@ -162,7 +162,7 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
     '''
 
     # load checkpoint with highest epoch number
-    train_history = pd.read_csv(f"{model_path}/train_history.csv", delimiter="|")
+    train_history = pd.read_csv(f"{model_path}/train_history.csv", sep="|")
     last_train_epoch = train_history[train_history["epoch"] == train_history["epoch"].max()]
     checkpoint_path = last_train_epoch["checkpoint_path"].iloc[0]
     checkpoint = torch.load(checkpoint_path)
@@ -226,11 +226,11 @@ def save_checkpoint(checkpoint: dict, model_path: str):
     train_history_path = f"{model_path}/train_history.csv"
     
     if not os.path.exists(train_history_path):
-        new_log.to_csv(train_history_path, delimiter="|")
+        new_log.to_csv(train_history_path, sep="|")
     else:
-        train_history = pd.read_csv(train_history_path, delimiter="|")
-        train_history.append(new_log, ignore_index=True)
-        train_history.to_csv(train_history_path, delimiter="|")
+        train_history = pd.read_csv(train_history_path, sep="|")
+        train_history = pd.concat([train_history, new_log], ignore_index=True)
+        train_history.to_csv(train_history_path, sep="|")
 
     logging.info(8*"-")
     logging.info(f"Saved model to checkpoint: {checkpoint_path}")
