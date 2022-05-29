@@ -76,13 +76,10 @@ class MriDataset(data.Dataset):
 
         subfolder = "train" if state == "train" else "valid"
         self.dataset_path = f"{self.root_dir}/{subfolder}/{view_type}"
-        print(f"labels_path: {self.root_dir}/{subfolder}-abnormal.csv")
         self.labels = pd.read_csv(f"{self.root_dir}/{subfolder}-abnormal.csv", 
                                       names=["id", "abnormality"], 
                                       dtype={"id": str, "abnormality": int}).head(10)
 
-        self.labels = self.labels.set_index("id")
-        print(self.labels)
         self.transform = transform
 
     def __len__(self):
@@ -90,9 +87,10 @@ class MriDataset(data.Dataset):
 
     def __getitem__(self, index):
         
-        df_index = "0" * (4 - len(str(index))) + str(index)
-        image = np.load(f"{self.dataset_path}/{df_index}.npy")
-        label = self.labels.loc[df_index]["abnormality"]
+        image_row = self.labels.loc[index]
+        image_index = "0" * (4 - len(str(index))) + str(index)
+        image = np.load(f"{self.dataset_path}/{image_index}.npy")
+        label = image_row["abnormality"]
 
         if self.transform:
             image = self.transform(image)
@@ -286,8 +284,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             else:
                 model.eval()
 
-            for id, batch in enumerate(dataloader):
-                print(f"id: {id}")
+            for id, batch in enumerate(dataloader, 0):
+
                 # progress bar
                 if id % 100 == 0 and id != 0:
                     progress = round((id / len_dataset) * 100, 1)    
