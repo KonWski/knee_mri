@@ -82,6 +82,7 @@ class MriDataset(data.Dataset):
                                       dtype={"id": str, "abnormality": int}).head(10)
 
         self.labels = self.labels.set_index("id")
+        print(self.labels)
         self.transform = transform
 
     def __len__(self):
