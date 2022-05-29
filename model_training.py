@@ -78,7 +78,7 @@ class MriDataset(data.Dataset):
         self.dataset_path = f"{self.root_dir}/{subfolder}/{view_type}"
         self.labels = pd.read_csv(f"{self.root_dir}/{subfolder}-abnormal.csv", 
                                       names=["id", "abnormality"], 
-                                      dtype={"id": str, "abnormality": int}).head(20)
+                                      dtype={"id": str, "abnormality": int}).head(10)
 
         self.labels = self.labels.set_index("id")
         self.transform = transform
@@ -307,7 +307,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
                 # print statistics
                 running_loss += loss.item()
-                running_corrects += torch.sum(preds == labels.data)
+                running_corrects += torch.sum(preds == labels.data).item()
 
             # save and print epoch statistics
             epoch_loss = round(running_loss / len_dataset, 2)
