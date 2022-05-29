@@ -260,7 +260,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
     # set weights if training process should be restarted
     if load_model and model_path is not None:
-        model, optimizer, last_epoch = load_checkpoint(model, criterion, model_path)
+        model, optimizer, last_epoch = load_checkpoint(model, optimizer, model_path)
         start_epoch = last_epoch + 1
 
     for epoch in range(start_epoch, n_epochs):
