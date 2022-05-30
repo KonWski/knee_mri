@@ -109,10 +109,10 @@ class MriNet(nn.Module):
         super().__init__()
         self.pretrained_model_type = pretrained_model_type
         self.pretrained_model = get_pretrained_model(pretrained_model_type)
-        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((15, 15))
-        self.max_pooling_layer = nn.AdaptiveMaxPool2d((15, 15))
+        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((12, 12))
+        self.max_pooling_layer = nn.AdaptiveMaxPool2d((12, 12))
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(450, 2)
+        self.classifier = nn.Linear(288, 2)
 
     def forward(self, x):
 
@@ -285,27 +285,32 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
             for id, batch in enumerate(dataloader, 0):
 
-                # progress bar
-                if id % 100 == 0 and id != 0:
-                    progress = round((id / len_dataset) * 100, 1)    
-                    logging.info(f"Progress: {progress}%")
-                
-                images, labels = batch
-                images = images.to(device)
-                labels = labels.to(device)
-                optimizer.zero_grad()
+                with torch.set_grad_enabled(state == 'train'):
 
-                # calculate loss
-                outputs = model(images)
-                loss = criterion(outputs, labels)
-                _, preds = torch.max(outputs, 1)
+                    # progress bar
+                    if id % 100 == 0 and id != 0:
+                        progress = round((id / len_dataset) * 100, 1)    
+                        logging.info(f"Progress: {progress}%")
+                    
+                    images, labels = batch
+                    images = images.to(device)
+                    labels = labels.to(device)
+                    optimizer.zero_grad()
 
-                if state == "train":
-                    loss.backward()
-                    optimizer.step()
+                    # calculate loss
+                    outputs = model(images)
+                    loss = criterion(outputs, labels)
+                    _, preds = torch.max(outputs, 1)
+
+                    if state == "train":
+                        loss.backward()
+                        optimizer.step()
 
                 # print statistics
                 running_loss += loss.item()
+                print(f"preds: {preds}")
+                print(f"label: {labels.data}")
+                print(f"Condition preds == labels.data : {preds == labels.data}")
                 running_corrects += torch.sum(preds == labels.data).item()
 
             # save and print epoch statistics
