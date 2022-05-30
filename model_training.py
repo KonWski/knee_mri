@@ -283,9 +283,9 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                 with torch.set_grad_enabled(state == 'train'):
                     
                     # 
-                    for param in model.parameters():
+                    for param in model.pretrained_model.parameters():
                         if param.requires_grad:
-                            print(param)
+                            print("Something went wrong")
 
                     # progress bar
                     if id % 100 == 0 and id != 0:
