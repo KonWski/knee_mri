@@ -95,10 +95,10 @@ class MriDataset(data.Dataset):
         if self.transform:
             image = self.transform(image)
 
-        if label == 1:
-            label = torch.Tensor([0, 1])
-        elif label == 0:
-            label = torch.Tensor([1, 0])
+        # if label == 1:
+        #     label = torch.Tensor([0, 1])
+        # elif label == 0:
+        #     label = torch.Tensor([1, 0])
 
         return image, label
 
@@ -312,6 +312,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                 print(f"label: {labels.data}")
                 print(f"Condition preds == labels.data : {preds == labels.data}")
                 running_corrects += torch.sum(preds == labels.data).item()
+                print(f"running_corrects: {running_corrects}")
 
             # save and print epoch statistics
             epoch_loss = round(running_loss / len_dataset, 2)
