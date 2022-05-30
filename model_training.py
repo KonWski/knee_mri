@@ -248,7 +248,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
     
     # initiate model and optimizer
     model = MriNet(pretrained_model_type)
-    optimizer = SGD(model.parameters(), lr=0.01)
+    model = model.to(device)
+    optimizer = SGD(model.classifier.parameters(), lr=0.01)
     criterion = nn.CrossEntropyLoss()
     start_epoch = 0
 
@@ -281,11 +282,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             for id, batch in enumerate(dataloader, 0):
 
                 with torch.set_grad_enabled(state == 'train'):
-                    
-                    # 
-                    for param in model.pretrained_model.parameters():
-                        if param.requires_grad:
-                            print("Something went wrong")
 
                     # progress bar
                     if id % 100 == 0 and id != 0:
