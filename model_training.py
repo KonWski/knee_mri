@@ -239,14 +239,24 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
     trains model for recognising selected abnormality on images taken from choosen view
     '''
 
-    # transformations
-    data_transforms = transforms.Compose([
+    # basic transformations + augmentation
+    train_transforms = transforms.Compose([
         transforms.ToTensor(),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
         transforms.Lambda(lambda x: torch.unsqueeze(x, dim=0)),
         transforms.Lambda(lambda x: x.permute(2, 0, 1, 3)),
         transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1))
         ])
-    
+
+    # basic transformations
+    test_transforms = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Lambda(lambda x: torch.unsqueeze(x, dim=0)),
+            transforms.Lambda(lambda x: x.permute(2, 0, 1, 3)),
+            transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1))
+            ])
+
     # initiate model and optimizer
     model = MriNet(pretrained_model_type)
     model = model.to(device)
@@ -264,7 +274,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
         # future checkpoint
         checkpoint = {"epoch": epoch, "pretrained_model_type": pretrained_model_type}
 
-        for state in ["train", "test"]:
+        for state, data_transforms in [("train", train_transforms), ("test", test_transforms)]:
 
             logging.info(f"Epoch {epoch}, State: {state}")
 
@@ -326,9 +336,9 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
 
 if __name__ == "__main__":
+
     logging.basicConfig(level=logging.INFO)
     args = get_args()
-
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     model = train_model(device, args["root_dir"], args["view_type"], args["abnormality_type"], 
