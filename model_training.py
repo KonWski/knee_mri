@@ -104,10 +104,12 @@ class MriNet(nn.Module):
         super().__init__()
         self.pretrained_model_type = pretrained_model_type
         self.pretrained_model = get_pretrained_model(pretrained_model_type)
-        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((12, 12))
-        self.max_pooling_layer = nn.AdaptiveMaxPool2d((12, 12))
+        # self.avg_pooling_layer = nn.AdaptiveAvgPool2d((12, 12))
+        # self.max_pooling_layer = nn.AdaptiveMaxPool2d((12, 12))
+        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((17, 17))
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(288, 2)
+        # self.classifier = nn.Linear(288, 2)
+        self.classifier = nn.Linear(289, 2)
 
     def forward(self, x):
 
@@ -115,18 +117,22 @@ class MriNet(nn.Module):
         features = self.pretrained_model(x)        
         features = torch.unsqueeze(features, dim=0)
         
-        features_avg = self.avg_pooling_layer(features)
-        features_max = self.max_pooling_layer(features)
+        # features_avg = self.avg_pooling_layer(features)
+        # features_max = self.max_pooling_layer(features)
+        features_pool = self.avg_pooling_layer(features)
 
-        features_avg = self.flatten(features_avg)
-        features_max = self.flatten(features_max)
+        # features_avg = self.flatten(features_avg)
+        # features_max = self.flatten(features_max)
+        features_flatten = self.flatten(features_pool)
         
-        features_avg = torch.squeeze(features_avg, dim=0)
-        features_max = torch.squeeze(features_max, dim=0)
-        features_concat = torch.cat((features_avg, features_max), dim=0)
-        features_concat = torch.unsqueeze(features_concat, dim=0)
+        # features_avg = torch.squeeze(features_avg, dim=0)
+        # features_max = torch.squeeze(features_max, dim=0)
+        # features_concat = torch.cat((features_avg, features_max), dim=0)
+        # features_concat = torch.unsqueeze(features_concat, dim=0)
+
+        output = self.classifier(features_flatten)
         
-        output = self.classifier(features_concat)
+        # output = self.classifier(features_concat)
         return output
 
 
