@@ -95,11 +95,6 @@ class MriDataset(data.Dataset):
         if self.transform:
             image = self.transform(image)
 
-        if label == 1:
-            label = torch.Tensor([0, 1])
-        elif label == 0:
-            label = torch.Tensor([1, 0])
-
         return image, label
 
 
@@ -112,7 +107,7 @@ class MriNet(nn.Module):
         self.avg_pooling_layer = nn.AdaptiveAvgPool2d((12, 12))
         self.max_pooling_layer = nn.AdaptiveMaxPool2d((12, 12))
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(288, 2)
+        self.classifier = nn.Linear(288, 1)
 
     def forward(self, x):
 
@@ -131,7 +126,7 @@ class MriNet(nn.Module):
         features_concat = torch.cat((features_avg, features_max), dim=0)
         features_concat = torch.unsqueeze(features_concat, dim=0)
         
-        output = self.classifier(features_concat)
+        output = torch.sigmoid(self.classifier(features_concat))
 
         return output
 
