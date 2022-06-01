@@ -304,7 +304,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                         logging.info(f"Progress: {progress}%, loss: {progress_loss}, accuracy: {progress_acc}")
                     
                     images, labels = batch
-                    labels = torch.unsqueeze(labels, dim=0)
                     images = images.to(device)
                     labels = labels.to(device)
                     optimizer.zero_grad()
