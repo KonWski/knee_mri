@@ -261,7 +261,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
     model = MriNet(pretrained_model_type)
     model = model.to(device)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.BCELoss()
     start_epoch = 0
 
     # set weights if training process should be restarted
