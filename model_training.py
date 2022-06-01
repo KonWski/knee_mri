@@ -310,8 +310,9 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                     outputs = model(images)
                     print(f"outputs: {outputs}")
                     print(f"outputs reshaped: {outputs.reshape(-1, 1)}")
+                    print(f"labels: {labels}")
                     
-                    loss = criterion(outputs, labels)
+                    loss = criterion(outputs.reshape(-1, 1), labels)
                     _, preds = torch.max(outputs, 1)
 
                     if state == "train":
