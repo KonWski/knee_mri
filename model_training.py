@@ -95,6 +95,11 @@ class MriDataset(data.Dataset):
         if self.transform:
             image = self.transform(image)
 
+        if label == 1:
+            label = torch.Tensor([0, 1])
+        elif label == 0:
+            label = torch.Tensor([1, 0])
+
         return image, label
 
 
