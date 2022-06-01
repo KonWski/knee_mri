@@ -316,9 +316,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                     print(f"labels shape: {labels.shape}")
                     
                     loss = criterion(outputs.float(), labels.float())
-                    preds = torch.round(outputs)
                     print(f"preds: {preds}")
-                    # _, preds = torch.max(outputs, 1)
+                    preds = torch.round(outputs)
 
                     if state == "train":
                         loss.backward()
@@ -326,7 +325,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
                 # print statistics
                 running_loss += loss.item()
-                # running_corrects += torch.sum(preds == labels.data).item()
+                running_corrects += torch.sum(preds == labels.data).item()
+                print(f"running_corrects: {running_corrects}")
 
             # save and print epoch statistics
             epoch_loss = round(running_loss / len_dataset, 2)
