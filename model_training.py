@@ -95,7 +95,7 @@ class MriDataset(data.Dataset):
         if self.transform:
             image = self.transform(image)
 
-        return image, label.float()
+        return image, float(label)
 
 
 class MriNet(nn.Module):
