@@ -125,7 +125,7 @@ class MriNet(nn.Module):
         features_max = torch.squeeze(features_max, dim=0)
         features_concat = torch.cat((features_avg, features_max), dim=0)
         features_concat = torch.unsqueeze(features_concat, dim=0)
-        
+        print(f"classifier output: {self.classifier(features_concat)}")
         output = torch.sigmoid(self.classifier(features_concat))
 
         return output
@@ -309,7 +309,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                     # calculate loss
                     outputs = model(images)
                     print(f"outputs: {outputs}")
-                    print(f"outputs reshaped: {outputs.reshape(-1, 1)}")
                     print(f"labels: {labels}")
                     
                     loss = criterion(outputs.reshape(-1, 1), labels)
