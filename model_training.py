@@ -313,6 +313,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
                     # calculate loss
                     outputs = model(images)
+                    print(f"outputs: {outputs}")
                     loss = criterion(outputs, labels)
                     _, preds = torch.max(outputs, 1)
 
