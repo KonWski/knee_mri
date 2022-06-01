@@ -107,7 +107,7 @@ class MriNet(nn.Module):
         self.avg_pooling_layer = nn.AdaptiveAvgPool2d((12, 12))
         self.max_pooling_layer = nn.AdaptiveMaxPool2d((12, 12))
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(288, 2)
+        self.classifier = nn.Linear(288, 1)
 
     def forward(self, x):
 
@@ -315,9 +315,10 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                     print(f"labels: {labels}")
                     print(f"labels shape: {labels.shape}")
                     
-                    _, preds = torch.max(outputs, 1)
+                    loss = criterion(outputs, labels)
+                    preds = torch.round(outputs)
                     print(f"preds: {preds}")
-                    loss = criterion(preds, labels)
+                    # _, preds = torch.max(outputs, 1)
 
                     if state == "train":
                         loss.backward()
@@ -325,7 +326,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
                 # print statistics
                 running_loss += loss.item()
-                running_corrects += torch.sum(preds == labels.data).item()
+                # running_corrects += torch.sum(preds == labels.data).item()
 
             # save and print epoch statistics
             epoch_loss = round(running_loss / len_dataset, 2)
