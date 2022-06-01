@@ -124,10 +124,6 @@ class MriNet(nn.Module):
         features_avg = torch.squeeze(features_avg, dim=0)
         features_max = torch.squeeze(features_max, dim=0)
         features_concat = torch.cat((features_avg, features_max), dim=0)
-        print(f"features_concat shape: {features_concat.shape}")
-        # features_concat = torch.unsqueeze(features_concat, dim=0)
-        print(f"classifier output: {self.classifier(features_concat)}")
-        print(f"classifier output shape: {self.classifier(features_concat).shape}")
         output = torch.sigmoid(self.classifier(features_concat))
         
         return output
@@ -309,15 +305,9 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                     optimizer.zero_grad()
 
                     # calculate loss
-                    outputs = model(images)
-                    print(f"outputs: {outputs}")
-                    print(f"outputs shape: {outputs.shape}")
-                    print(f"labels: {labels}")
-                    print(f"labels shape: {labels.shape}")
-                    
+                    outputs = model(images)                    
                     loss = criterion(outputs.float(), labels.float())
                     preds = torch.round(outputs)
-                    print(f"preds: {preds}")
 
                     if state == "train":
                         loss.backward()
@@ -326,7 +316,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                 # print statistics
                 running_loss += loss.item()
                 running_corrects += torch.sum(preds == labels.data).item()
-                print(f"running_corrects: {running_corrects}")
 
             # save and print epoch statistics
             epoch_loss = round(running_loss / len_dataset, 2)
