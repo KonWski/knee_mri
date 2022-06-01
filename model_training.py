@@ -125,7 +125,7 @@ class MriNet(nn.Module):
         features_max = torch.squeeze(features_max, dim=0)
         features_concat = torch.cat((features_avg, features_max), dim=0)
         print(f"features_concat shape: {features_concat.shape}")
-        features_concat = torch.unsqueeze(features_concat, dim=0)
+        # features_concat = torch.unsqueeze(features_concat, dim=0)
         print(f"classifier output: {self.classifier(features_concat)}")
         print(f"classifier output shape: {self.classifier(features_concat).shape}")
         output = torch.sigmoid(self.classifier(features_concat))
