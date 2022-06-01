@@ -5,7 +5,7 @@ import numpy as np
 import logging
 from sklearn.utils import shuffle
 import torch
-from torch import nn
+from torch import dtype, nn
 from torch.optim import SGD
 import torch.nn.functional as F
 import torch.utils.data as data
@@ -88,7 +88,7 @@ class MriDataset(data.Dataset):
     def __getitem__(self, index):
         
         image_row = self.labels.loc[index]
-        label = image_row["abnormality"]
+        label = torch.FloatTensor(image_row["abnormality"])
         image_index = image_row["id"]
         image = np.load(f"{self.dataset_path}/{image_index}.npy")
 
