@@ -95,7 +95,7 @@ class MriDataset(data.Dataset):
         if self.transform:
             image = self.transform(image)
 
-        return image, float(label)
+        return image, label
 
 
 class MriNet(nn.Module):
@@ -315,7 +315,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                     print(f"labels: {labels}")
                     print(f"labels shape: {labels.shape}")
                     
-                    loss = criterion(outputs, labels)
+                    loss = criterion(outputs.float(), labels.float())
                     preds = torch.round(outputs)
                     print(f"preds: {preds}")
                     # _, preds = torch.max(outputs, 1)
