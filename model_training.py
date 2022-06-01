@@ -316,8 +316,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                     print(f"labels shape: {labels.shape}")
                     
                     loss = criterion(outputs.float(), labels.float())
-                    print(f"preds: {preds}")
                     preds = torch.round(outputs)
+                    print(f"preds: {preds}")
 
                     if state == "train":
                         loss.backward()
