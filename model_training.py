@@ -88,7 +88,7 @@ class MriDataset(data.Dataset):
     def __getitem__(self, index):
         
         image_row = self.labels.loc[index]
-        label = torch.FloatTensor(image_row["abnormality"])
+        label = image_row["abnormality"]
         image_index = image_row["id"]
         image = np.load(f"{self.dataset_path}/{image_index}.npy")
 
