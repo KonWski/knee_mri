@@ -5,13 +5,13 @@ import numpy as np
 import logging
 from sklearn.utils import shuffle
 import torch
-from torch import dtype, nn
+from torch import nn
 from torch.optim import SGD
 import torch.nn.functional as F
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
-from pretrained_models import get_pretrained_model
+from models import SubnetMri
 import torchvision.transforms as transforms
 
 def get_args():
@@ -96,63 +96,6 @@ class MriDataset(data.Dataset):
             image = self.transform(image)
 
         return image, label
-
-
-class SubnetMri(nn.Module):
-    
-    def __init__(self, pretrained_model_type):
-        super().__init__()
-        self.pretrained_model_type = pretrained_model_type
-        self.pretrained_model = get_pretrained_model(pretrained_model_type)
-        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((12, 12))
-        self.max_pooling_layer = nn.AdaptiveMaxPool2d((12, 12))
-        self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(288, 1)
-
-    def forward(self, x):
-
-        x = torch.squeeze(x, dim=0)        
-        features = self.pretrained_model(x)        
-        features = torch.unsqueeze(features, dim=0)
-        
-        features_avg = self.avg_pooling_layer(features)
-        features_max = self.max_pooling_layer(features)
-
-        features_avg = self.flatten(features_avg)
-        features_max = self.flatten(features_max)
-        
-        features_avg = torch.squeeze(features_avg, dim=0)
-        features_max = torch.squeeze(features_max, dim=0)
-        features_concat = torch.cat((features_avg, features_max), dim=0)
-        output = torch.sigmoid(self.classifier(features_concat))
-        
-        return output
-
-
-class MriNet(nn.Module):
-
-    def __init__(self, subnet_axial, subnet_coronal, subnet_sagittal):
-        super().__init__()
-
-        # independent models each responsible for individual view
-        self.subnet_axial = subnet_axial
-        self.subnet_coronal = subnet_coronal
-        self.subnet_sagittal = subnet_sagittal
-
-        # final classification layer
-        self.classifier = nn.Linear(3, 1)
-
-    def forward(self, x):
-
-        # output from each of model
-        output_subnet_axial = self.subnet_axial(x)
-        output_subnet_coronal = self.subnet_coronal(x)
-        output_subnet_sagittal = self.subnet_sagittal(x)
-
-        output_concat = torch.cat((output_subnet_axial, output_subnet_coronal, output_subnet_sagittal), dim=0)
-        output = torch.sigmoid(self.classifier(output_concat))
-
-        return output
 
 
 def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
