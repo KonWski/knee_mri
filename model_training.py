@@ -98,7 +98,7 @@ class MriDataset(data.Dataset):
         return image, label
 
 
-class MriNet(nn.Module):
+class SubnetMri(nn.Module):
     
     def __init__(self, pretrained_model_type):
         super().__init__()
@@ -126,6 +126,32 @@ class MriNet(nn.Module):
         features_concat = torch.cat((features_avg, features_max), dim=0)
         output = torch.sigmoid(self.classifier(features_concat))
         
+        return output
+
+
+class MriNet(nn.Module):
+
+    def __init__(self, subnet_axial, subnet_coronal, subnet_sagittal):
+        super().__init__()
+
+        # independent models each responsible for individual view
+        self.subnet_axial = subnet_axial
+        self.subnet_coronal = subnet_coronal
+        self.subnet_sagittal = subnet_sagittal
+
+        # final classification layer
+        self.classifier = nn.Linear(3, 1)
+
+    def forward(self, x):
+
+        # output from each of model
+        output_subnet_axial = self.subnet_axial(x)
+        output_subnet_coronal = self.subnet_coronal(x)
+        output_subnet_sagittal = self.subnet_sagittal(x)
+
+        output_concat = torch.cat((output_subnet_axial, output_subnet_coronal, output_subnet_sagittal), dim=0)
+        output = torch.sigmoid(self.classifier(output_concat))
+
         return output
 
 
@@ -256,7 +282,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             ])
 
     # initiate model and optimizer
-    model = MriNet(pretrained_model_type)
+    model = SubnetMri(pretrained_model_type)
     model = model.to(device)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
     criterion = nn.BCELoss()
