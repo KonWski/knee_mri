@@ -29,6 +29,6 @@ def get_pretrained_model(model_name: str):
         raise Exception(f"Pretrained model type not found: {model_name}")
 
     for param in model.parameters():
-        param.requires_grad = True
+        param.requires_grad = False
 
     return model
