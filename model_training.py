@@ -223,7 +223,7 @@ def save_checkpoint(checkpoint: dict, model_path: str):
     else:
         train_history = pd.read_csv(train_history_path, sep="|")
         train_history = pd.concat([train_history, new_log], ignore_index=True)
-        train_history.to_csv(train_history_path, sep="|")
+        train_history.to_csv(train_history_path, sep="|", index=False)
 
     logging.info(8*"-")
     logging.info(f"Saved model to checkpoint: {checkpoint_path}")
