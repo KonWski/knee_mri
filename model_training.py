@@ -121,10 +121,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
     model = SubnetMri(pretrained_model_type)
     model = model.to(device)
 
-    for name, param in model.named_parameters():
-        if param.requires_grad:
-            print(f"param: {name}")
-
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
     criterion = nn.BCELoss()
     start_epoch = 0
