@@ -1,17 +1,13 @@
-from datetime import datetime
-import os
 import pandas as pd
 import numpy as np
 import logging
-from sklearn.utils import shuffle
 import torch
 from torch import nn
 from torch.optim import SGD
-import torch.nn.functional as F
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
-from models import SubnetMri, MriNet
+from models import SubnetMri, MriNet, load_checkpoint, save_checkpoint
 import torchvision.transforms as transforms
 
 def get_args():
@@ -97,108 +93,6 @@ class MriDataset(data.Dataset):
         return image, label
 
 
-def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
-    '''
-    loads model checkpoint from given path
-
-    Parameters
-    ----------
-    model : nn.Module
-            One of models defined in pretrained_models scripts
-    optimizer : torch.optim
-    model_path : str
-                 Path to directory with checkpoints
-
-    Notes
-    -----
-    checkpoint: dict
-                parameters retrieved from training process i.e.:
-                - model_state_dict
-                - optimizer_state_dict
-                - last finished number of epoch
-                - loss from last epoch training
-                - accuracy from last epoch training
-                - loss from last epoch testing
-                - accuracy from last epoch testing
-                - save time
-    '''
-
-    # load checkpoint with highest epoch number
-    train_history = pd.read_csv(f"{model_path}/train_history.csv", sep="|")
-    last_train_epoch = train_history[train_history["epoch"] == train_history["epoch"].max()]
-    checkpoint_path = last_train_epoch["checkpoint_path"].iloc[0]
-    checkpoint = torch.load(checkpoint_path)
-
-    # load parameters from checkpoint
-    model.load_state_dict(checkpoint["model_state_dict"])
-    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-    epoch = checkpoint["epoch"]    
-
-    # print loaded parameters
-    logging.info(f"Loaded model from checkpoint: {checkpoint_path}")
-    logging.info(f"Epoch: {epoch}")
-    logging.info(f"Train loss: {checkpoint['train_loss']}")
-    logging.info(f"Train accuracy: {checkpoint['train_acc']}")
-    logging.info(f"Test loss: {checkpoint['test_loss']}")
-    logging.info(f"Test accuracy: {checkpoint['test_acc']}")
-    logging.info(8*"-")
-
-    return model, optimizer, epoch
-
-
-def save_checkpoint(checkpoint: dict, model_path: str):
-    '''
-    saves model to checkpoint
-
-    Parameters
-    ----------
-    checkpoint: dict
-            parameters retrieved from training process i.e.:
-            - model_state_dict
-            - optimizer_state_dict
-            - last finished number of epoch
-            - loss from last epoch training
-            - accuracy from last epoch training
-            - loss from last epoch testing
-            - accuracy from last epoch testing
-            - Save time
-    model_path : str
-                 Path to directory with checkpoints
-    '''
-
-    checkpoint_path = f"{model_path}/{checkpoint['pretrained_model_type']}_{checkpoint['epoch']}"
-
-    # save checkpoint
-    torch.save(checkpoint, checkpoint_path)
-
-    # new row in train history
-    new_log = pd.DataFrame({
-                            "pretrained_model_type": [checkpoint["pretrained_model_type"]], 
-                            "epoch": [checkpoint["epoch"]],
-                            "train_loss": [checkpoint["train_loss"]],
-                            "train_acc": [checkpoint["train_acc"]],
-                            "test_loss": [checkpoint["test_loss"]],
-                            "test_acc": [checkpoint["test_acc"]],
-                            "checkpoint_path": [checkpoint_path],
-                            "save_dttm": [datetime.now()]
-                            })
-
-    # check if file with training logs already exists
-    train_history_path = f"{model_path}/train_history.csv"
-    
-    if not os.path.exists(train_history_path):
-        new_log.to_csv(train_history_path, sep="|")
-    else:
-        train_history = pd.read_csv(train_history_path, sep="|")
-        train_history = pd.concat([train_history, new_log], ignore_index=True)
-        train_history.to_csv(train_history_path, sep="|", index=False)
-
-    logging.info(8*"-")
-    logging.info(f"Saved model to checkpoint: {checkpoint_path}")
-    logging.info(f"Epoch: {checkpoint['epoch']}")
-    logging.info(8*"-")
-
-
 def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pretrained_model_type: str, 
         batch_size: int, n_epochs: int, load_model: bool = False, model_path: str = None):
     '''
@@ -226,6 +120,11 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
     # initiate model and optimizer
     model = SubnetMri(pretrained_model_type)
     model = model.to(device)
+
+    for param in model.parameters():
+        if param.requires_grad:
+            print(f"param: {param}")
+
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
     criterion = nn.BCELoss()
     start_epoch = 0

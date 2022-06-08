@@ -1,6 +1,12 @@
 from torchvision import models
 from torch import nn
 import torch
+import yaml
+from torch.optim import SGD
+import logging
+import pandas as pd
+from datetime import datetime
+import os
 
 class SubnetMri(nn.Module):
     '''
@@ -49,21 +55,36 @@ class MriNet(nn.Module):
 
     Attributes
     ----------
-    subnet_axial: SubnetMri
-                  submodel specialized in recognizing specific abnormality using axial view
-    subnet_coronal: SubnetMri
-                    submodel specialized in recognizing specific abnormality using coronal view
-    subnet_sagittal: SubnetMri
-                     submodel specialized in recognizing specific abnormality using sagittal view  
-    '''
 
-    def __init__(self, subnet_axial: SubnetMri, subnet_coronal: SubnetMri, subnet_sagittal: SubnetMri):
+    '''
+    def __init__(self, model_path: str, abnormality_type: str, load_weights: bool=True):
         super().__init__()
 
-        # independent models each responsible for individual view
-        self.subnet_axial = subnet_axial
-        self.subnet_coronal = subnet_coronal
-        self.subnet_sagittal = subnet_sagittal
+        config = self.load_final_model_config(model_path, abnormality_type)
+
+        # load template models        
+        self.subnet_axial = SubnetMri(config["axial"]["pretrained_model_type"])
+        self.subnet_coronal = SubnetMri(config["coronal"]["pretrained_model_type"])
+        self.subnet_sagittal = SubnetMri(config["sagittal"]["pretrained_model_type"])
+
+        if load_weights:
+            
+            optimizer_axial = SGD(self.subnet_axial.classifier.parameters(), lr=0.01)
+            subnet_axial, optimizer, last_epoch = load_checkpoint(self.subnet_axial.classifier, optimizer_axial, model_path)
+            self.subnet_axial = subnet_axial
+
+            optimizer_coronal = SGD(self.subnet_coronal.classifier.parameters(), lr=0.01)
+            subnet_coronal, optimizer, last_epoch = load_checkpoint(self.subnet_coronal.classifier, optimizer_coronal, model_path)
+            self.subnet_coronal = subnet_coronal
+
+            optimizer_sagittal = SGD(self.subnet_sagittal.classifier.parameters(), lr=0.01)
+            subnet_sagittal, optimizer, last_epoch = load_checkpoint(self.subnet_sagittal.classifier, optimizer_sagittal, model_path)
+            self.subnet_sagittal = subnet_sagittal
+        
+        # turn off all 
+        for model in [self.subnet_axial, self.subnet_coronal, self.subnet_sagittal]:
+            for param in model.parameters():
+                param.requires_grad = False
 
         # final classification layer
         self.classifier = nn.Linear(3, 1)
@@ -80,7 +101,11 @@ class MriNet(nn.Module):
 
         return output
 
+    def load_final_model_config(self, model_path, abnormality_type):
+        with open(f"{model_path}/{abnormality_type}_config.yml", "r") as config_stream:
+            return yaml.safe_load(config_stream)
 
+    
 def get_pretrained_model(model_name: str):
     '''
     Downloads pretrained model from PyTorch, modifies its layers to output features
@@ -91,7 +116,7 @@ def get_pretrained_model(model_name: str):
         indicator which of PyTorch pretrained model should be returned
         possible options: resnet18, resnet34, alexnet
     '''
-    
+
     if model_name == "resnet18":
         model = models.resnet18(pretrained=True)
         model.fc = nn.Identity()
@@ -112,3 +137,105 @@ def get_pretrained_model(model_name: str):
         param.requires_grad = False
 
     return model
+
+
+def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
+    '''
+    loads model checkpoint from given path
+
+    Parameters
+    ----------
+    model : nn.Module
+            One of models defined in pretrained_models scripts
+    optimizer : torch.optim
+    model_path : str
+                 Path to directory with checkpoints
+
+    Notes
+    -----
+    checkpoint: dict
+                parameters retrieved from training process i.e.:
+                - model_state_dict
+                - optimizer_state_dict
+                - last finished number of epoch
+                - loss from last epoch training
+                - accuracy from last epoch training
+                - loss from last epoch testing
+                - accuracy from last epoch testing
+                - save time
+    '''
+
+    # load checkpoint with highest epoch number
+    train_history = pd.read_csv(f"{model_path}/train_history.csv", sep="|")
+    last_train_epoch = train_history[train_history["epoch"] == train_history["epoch"].max()]
+    checkpoint_path = last_train_epoch["checkpoint_path"].iloc[0]
+    checkpoint = torch.load(checkpoint_path)
+
+    # load parameters from checkpoint
+    model.load_state_dict(checkpoint["model_state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    epoch = checkpoint["epoch"]    
+
+    # print loaded parameters
+    logging.info(f"Loaded model from checkpoint: {checkpoint_path}")
+    logging.info(f"Epoch: {epoch}")
+    logging.info(f"Train loss: {checkpoint['train_loss']}")
+    logging.info(f"Train accuracy: {checkpoint['train_acc']}")
+    logging.info(f"Test loss: {checkpoint['test_loss']}")
+    logging.info(f"Test accuracy: {checkpoint['test_acc']}")
+    logging.info(8*"-")
+
+    return model, optimizer, epoch
+
+
+def save_checkpoint(checkpoint: dict, model_path: str):
+    '''
+    saves model to checkpoint
+
+    Parameters
+    ----------
+    checkpoint: dict
+            parameters retrieved from training process i.e.:
+            - model_state_dict
+            - optimizer_state_dict
+            - last finished number of epoch
+            - loss from last epoch training
+            - accuracy from last epoch training
+            - loss from last epoch testing
+            - accuracy from last epoch testing
+            - Save time
+    model_path : str
+                 Path to directory with checkpoints
+    '''
+
+    checkpoint_path = f"{model_path}/{checkpoint['pretrained_model_type']}_{checkpoint['epoch']}"
+
+    # save checkpoint
+    torch.save(checkpoint, checkpoint_path)
+
+    # new row in train history
+    new_log = pd.DataFrame({
+                            "pretrained_model_type": [checkpoint["pretrained_model_type"]], 
+                            "epoch": [checkpoint["epoch"]],
+                            "train_loss": [checkpoint["train_loss"]],
+                            "train_acc": [checkpoint["train_acc"]],
+                            "test_loss": [checkpoint["test_loss"]],
+                            "test_acc": [checkpoint["test_acc"]],
+                            "checkpoint_path": [checkpoint_path],
+                            "save_dttm": [datetime.now()]
+                            })
+
+    # check if file with training logs already exists
+    train_history_path = f"{model_path}/train_history.csv"
+    
+    if not os.path.exists(train_history_path):
+        new_log.to_csv(train_history_path, sep="|")
+    else:
+        train_history = pd.read_csv(train_history_path, sep="|")
+        train_history = pd.concat([train_history, new_log], ignore_index=True)
+        train_history.to_csv(train_history_path, sep="|", index=False)
+
+    logging.info(8*"-")
+    logging.info(f"Saved model to checkpoint: {checkpoint_path}")
+    logging.info(f"Epoch: {checkpoint['epoch']}")
+    logging.info(8*"-")
