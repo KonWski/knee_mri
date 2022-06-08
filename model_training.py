@@ -76,11 +76,9 @@ class MriDataset(data.Dataset):
 
         subfolder = "train" if state == "train" else "valid"
         self.dataset_path = f"{self.root_dir}/{subfolder}/{view_type}"
-        print(f"dataset_path: {self.dataset_path}")
         self.labels = pd.read_csv(f"{self.root_dir}/{subfolder}-{self.abnormality_type}.csv", 
                                       names=["id", "abnormality"], 
                                       dtype={"id": str, "abnormality": int})
-        print(f"labels path: {self.root_dir}/{subfolder}-{self.abnormality_type}.csv")
         self.transform = transform
 
     def __len__(self):
