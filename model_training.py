@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 import argparse
 from models import SubnetMri, MriNet, load_checkpoint, save_checkpoint
 import torchvision.transforms as transforms
+import yaml
 
 def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
@@ -20,7 +21,7 @@ def get_args():
     parser.add_argument('--n_epochs', type=int, help='Number of epochs')
     parser.add_argument('--model_path', type=str, default=None, help='Path to directory to save/load model state dictionary')
     parser.add_argument('--load_model', type=str, default="N", help='Y -> continue learning using state_dict, train_history in save_path')
-
+ 
     args = vars(parser.parse_args())
     
     # directory safe check
@@ -30,10 +31,11 @@ def get_args():
 
     # parse str to boolean
     str_true = ["Y", "y", "Yes", "yes", "true", "True"]
-    if args["load_model"] in str_true:
-        args["load_model"] = True
-    else:
-        args["load_model"] = False
+    for param in args.keys():
+        if args[param] in str_true:
+            args[param] = True
+        else:
+            args[param] = False
 
     # print input parameters
     logging.info(8*"-")
@@ -118,9 +120,12 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             ])
 
     # initiate model and optimizer
-    model = SubnetMri(pretrained_model_type)
-    model = model.to(device)
+    if pretrained_model_type == "final_model":
+        model = MriNet(model_path, abnormality_type)
+    else:
+        model = SubnetMri(pretrained_model_type)
 
+    model = model.to(device)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
     criterion = nn.BCELoss()
     start_epoch = 0

@@ -57,7 +57,7 @@ class MriNet(nn.Module):
     ----------
 
     '''
-    def __init__(self, model_path: str, abnormality_type: str, load_weights: bool=True):
+    def __init__(self, model_path: str, abnormality_type: str):
         super().__init__()
 
         config = self.load_final_model_config(model_path, abnormality_type)
@@ -66,22 +66,22 @@ class MriNet(nn.Module):
         self.subnet_axial = SubnetMri(config["axial"]["pretrained_model_type"])
         self.subnet_coronal = SubnetMri(config["coronal"]["pretrained_model_type"])
         self.subnet_sagittal = SubnetMri(config["sagittal"]["pretrained_model_type"])
-
-        if load_weights:
-            
-            optimizer_axial = SGD(self.subnet_axial.classifier.parameters(), lr=0.01)
-            subnet_axial, optimizer, last_epoch = load_checkpoint(self.subnet_axial.classifier, optimizer_axial, model_path)
-            self.subnet_axial = subnet_axial
-
-            optimizer_coronal = SGD(self.subnet_coronal.classifier.parameters(), lr=0.01)
-            subnet_coronal, optimizer, last_epoch = load_checkpoint(self.subnet_coronal.classifier, optimizer_coronal, model_path)
-            self.subnet_coronal = subnet_coronal
-
-            optimizer_sagittal = SGD(self.subnet_sagittal.classifier.parameters(), lr=0.01)
-            subnet_sagittal, optimizer, last_epoch = load_checkpoint(self.subnet_sagittal.classifier, optimizer_sagittal, model_path)
-            self.subnet_sagittal = subnet_sagittal
         
-        # turn off all 
+        dummy_optimizer = SGD(self.subnet_axial.classifier.parameters(), lr=0.01)
+
+        axial_model_path = config["axial"]["model_path"]
+        subnet_axial, optimizer, last_epoch = load_checkpoint(self.subnet_axial.classifier, dummy_optimizer, axial_model_path)
+        self.subnet_axial = subnet_axial
+
+        coronal_model_path = config["coronal"]["model_path"]
+        subnet_coronal, optimizer, last_epoch = load_checkpoint(self.subnet_coronal.classifier, dummy_optimizer, coronal_model_path)
+        self.subnet_coronal = subnet_coronal
+
+        sagittal_model_path = config["sagittal"]["model_path"]
+        subnet_sagittal, optimizer, last_epoch = load_checkpoint(self.subnet_sagittal.classifier, dummy_optimizer, sagittal_model_path)
+        self.subnet_sagittal = subnet_sagittal
+        
+        # turn off  grads in all parameters 
         for model in [self.subnet_axial, self.subnet_coronal, self.subnet_sagittal]:
             for param in model.parameters():
                 param.requires_grad = False
@@ -188,7 +188,7 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
     return model, optimizer, epoch
 
 
-def save_checkpoint(checkpoint: dict, model_path: str):
+def save_checkpoint(checkpoint: dict, model_path: str, final_model: bool):
     '''
     saves model to checkpoint
 
@@ -207,7 +207,6 @@ def save_checkpoint(checkpoint: dict, model_path: str):
     model_path : str
                  Path to directory with checkpoints
     '''
-
     checkpoint_path = f"{model_path}/{checkpoint['pretrained_model_type']}_{checkpoint['epoch']}"
 
     # save checkpoint
@@ -215,7 +214,7 @@ def save_checkpoint(checkpoint: dict, model_path: str):
 
     # new row in train history
     new_log = pd.DataFrame({
-                            "pretrained_model_type": [checkpoint["pretrained_model_type"]], 
+                            "pretrained_model_type": [checkpoint["pretrained_model_type"]],
                             "epoch": [checkpoint["epoch"]],
                             "train_loss": [checkpoint["train_loss"]],
                             "train_acc": [checkpoint["train_acc"]],
