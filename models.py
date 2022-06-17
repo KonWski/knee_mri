@@ -71,15 +71,15 @@ class MriNet(nn.Module):
         dummy_optimizer = SGD(self.subnet_axial.classifier.parameters(), lr=0.01)
 
         axial_model_path = config["axial"]["checkpoint_path"]
-        subnet_axial, optimizer, last_epoch = load_checkpoint(self.subnet_axial.classifier, dummy_optimizer, axial_model_path)
+        subnet_axial, optimizer, last_epoch = load_checkpoint(self.subnet_axial, dummy_optimizer, axial_model_path)
         self.subnet_axial = subnet_axial
 
         coronal_model_path = config["coronal"]["checkpoint_path"]
-        subnet_coronal, optimizer, last_epoch = load_checkpoint(self.subnet_coronal.classifier, dummy_optimizer, coronal_model_path)
+        subnet_coronal, optimizer, last_epoch = load_checkpoint(self.subnet_coronal, dummy_optimizer, coronal_model_path)
         self.subnet_coronal = subnet_coronal
 
         sagittal_model_path = config["sagittal"]["checkpoint_path"]
-        subnet_sagittal, optimizer, last_epoch = load_checkpoint(self.subnet_sagittal.classifier, dummy_optimizer, sagittal_model_path)
+        subnet_sagittal, optimizer, last_epoch = load_checkpoint(self.subnet_sagittal, dummy_optimizer, sagittal_model_path)
         self.subnet_sagittal = subnet_sagittal
         
         # turn off  grads in all parameters 
@@ -165,7 +165,6 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, checkpoint_path: s
                 - accuracy from last epoch testing
                 - save time
     '''
-    print(f"checkpoint_path: {checkpoint_path}")
     checkpoint = torch.load(checkpoint_path)
 
     # load parameters from checkpoint
