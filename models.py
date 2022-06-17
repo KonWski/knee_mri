@@ -90,12 +90,12 @@ class MriNet(nn.Module):
         # final classification layer
         self.classifier = nn.Linear(3, 1)
 
-    def forward(self, x: Dict):
+    def forward(self, image_axial, image_coronal, image_sagittal):
 
         # output from each of model
-        output_subnet_axial = self.subnet_axial(x["axial"])
-        output_subnet_coronal = self.subnet_coronal(x["coronal"])
-        output_subnet_sagittal = self.subnet_sagittal(x["sagittal"])
+        output_subnet_axial = self.subnet_axial(image_axial)
+        output_subnet_coronal = self.subnet_coronal(image_coronal)
+        output_subnet_sagittal = self.subnet_sagittal(image_sagittal)
 
         output_concat = torch.cat((output_subnet_axial, output_subnet_coronal, output_subnet_sagittal), dim=0)
         output = torch.sigmoid(self.classifier(output_concat))

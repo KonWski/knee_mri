@@ -104,13 +104,15 @@ def train_model(device, root_dir: str, abnormality_type: str, batch_size: int,
                         progress_acc = round(running_corrects / (id + 1), 2)
                         logging.info(f"Progress: {progress}%, loss: {progress_loss}, accuracy: {progress_acc}")
                     
-                    images, labels = batch
-                    images = images.to(device)
+                    image_axial, image_coronal, image_sagittal, labels = batch
+                    image_axial = image_axial.to(device)
+                    image_coronal = image_coronal.to(device)
+                    image_sagittal = image_sagittal.to(device)
                     labels = labels.to(device)
                     optimizer.zero_grad()
 
                     # calculate loss
-                    outputs = model(images)                    
+                    outputs = model(image_axial, image_coronal, image_sagittal)                    
                     loss = criterion(outputs.float(), labels.float())
                     preds = torch.round(outputs)
 
@@ -183,13 +185,7 @@ class MainMriDataset(data.Dataset):
             image_coronal = self.transform(image_coronal)
             image_sagittal = self.transform(image_sagittal)
 
-        images = {
-                "image_axial": image_axial, 
-                "image_coronal": image_coronal, 
-                "image_sagittal": image_sagittal
-                }
-
-        return images, label
+        return image_axial, image_coronal, image_sagittal, label
 
 
 if __name__ == "__main__":
