@@ -132,7 +132,13 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
     # set weights if training process should be restarted
     if load_model and model_path is not None:
-        model, optimizer, last_epoch = load_checkpoint(model, optimizer, model_path)
+
+        # load checkpoint with highest epoch number
+        train_history = pd.read_csv(f"{model_path}/train_history.csv", sep="|")
+        last_train_epoch = train_history[train_history["epoch"] == train_history["epoch"].max()]
+        checkpoint_path = last_train_epoch["checkpoint_path"].iloc[0]
+
+        model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
         start_epoch = last_epoch + 1
 
     for epoch in range(start_epoch, n_epochs):
