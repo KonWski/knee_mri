@@ -9,7 +9,7 @@ from datetime import datetime
 import os
 from typing import Dict
 
-class SubnetMri(nn.Module):
+class ViewMriNet(nn.Module):
     '''
     Submodel specialized in recognizing specific abnormality using one of 3 views.
     Build on basis of pretrained model.
@@ -49,7 +49,7 @@ class SubnetMri(nn.Module):
         return output
 
 
-class MriNet(nn.Module):
+class MainMriNet(nn.Module):
     '''
     Main model responsible for recognizing specific abnormality.
     Build on basis of 3 submodel each specialized in specific view
@@ -64,9 +64,9 @@ class MriNet(nn.Module):
         config = self.load_final_model_config(model_path, abnormality_type)
 
         # load template models        
-        self.subnet_axial = SubnetMri(config["axial"]["pretrained_model_type"])
-        self.subnet_coronal = SubnetMri(config["coronal"]["pretrained_model_type"])
-        self.subnet_sagittal = SubnetMri(config["sagittal"]["pretrained_model_type"])
+        self.subnet_axial = ViewMriNet(config["axial"]["pretrained_model_type"])
+        self.subnet_coronal = ViewMriNet(config["coronal"]["pretrained_model_type"])
+        self.subnet_sagittal = ViewMriNet(config["sagittal"]["pretrained_model_type"])
         
         dummy_optimizer = SGD(self.subnet_axial.classifier.parameters(), lr=0.01)
 

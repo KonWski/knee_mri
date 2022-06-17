@@ -7,9 +7,8 @@ from torch.optim import SGD
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
-from models import SubnetMri, MriNet, load_checkpoint, save_checkpoint
-import torchvision.transforms as transforms
-import yaml
+from models import ViewMriNet, load_checkpoint, save_checkpoint
+from transforms import test_transforms, train_transforms
 
 def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
@@ -48,7 +47,7 @@ def get_args():
     return args
 
 
-class MriDataset(data.Dataset):
+class ViewDataset(data.Dataset):
     '''
     Attributes
     ----------
@@ -101,30 +100,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
     trains model for recognising selected abnormality on images taken from choosen view
     '''
 
-    # basic transformations + augmentation
-    train_transforms = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
-        transforms.Lambda(lambda x: torch.unsqueeze(x, dim=0)),
-        transforms.Lambda(lambda x: x.permute(2, 0, 1, 3)),
-        transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1))
-        ])
-
-    # basic transformations
-    test_transforms = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Lambda(lambda x: torch.unsqueeze(x, dim=0)),
-            transforms.Lambda(lambda x: x.permute(2, 0, 1, 3)),
-            transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1))
-            ])
-
-    # initiate model and optimizer
-    if pretrained_model_type == "final_model":
-        model = MriNet(model_path, abnormality_type)
-    else:
-        model = SubnetMri(pretrained_model_type)
-
+    model = ViewMriNet(pretrained_model_type)
     model = model.to(device)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
     criterion = nn.BCELoss()
@@ -153,7 +129,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             running_loss = 0.0
             running_corrects = 0
 
-            dataset = MriDataset(root_dir, state, view_type, abnormality_type, transform = data_transforms)
+            dataset = ViewDataset(root_dir, state, view_type, abnormality_type, transform = data_transforms)
             len_dataset = len(dataset)
             dataloader = DataLoader(dataset, batch_size, shuffle=True)
 
@@ -211,7 +187,9 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
     args = get_args()
+
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    logging.info(f"Device: {device}")
 
     model = train_model(device, args["root_dir"], args["view_type"], args["abnormality_type"], 
                             args["pretrained_model_type"], args["batch_size"], args["n_epochs"], 

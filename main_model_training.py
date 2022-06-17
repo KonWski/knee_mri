@@ -7,7 +7,7 @@ from torch.optim import SGD
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
-from models import MriNet, load_checkpoint, save_checkpoint
+from models import MainMriNet, load_checkpoint, save_checkpoint
 from transforms import test_transforms, train_transforms
 
 def get_args():
@@ -52,7 +52,7 @@ def train_model(device, root_dir: str, abnormality_type: str, batch_size: int,
     '''
 
     # initiate model and optimizer
-    model = MriNet(model_path, abnormality_type)
+    model = MainMriNet(model_path, abnormality_type)
     model = model.to(device)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
     criterion = nn.BCELoss()
@@ -82,7 +82,7 @@ def train_model(device, root_dir: str, abnormality_type: str, batch_size: int,
             running_corrects = 0
 
             # dataset, dataloader
-            dataset = MainMriDataset(root_dir, state, abnormality_type, transform = data_transforms)
+            dataset = MainDataset(root_dir, state, abnormality_type, transform = data_transforms)
             dataloader = DataLoader(dataset, batch_size, shuffle=True)
 
             # all datasets have the same length
@@ -140,7 +140,7 @@ def train_model(device, root_dir: str, abnormality_type: str, batch_size: int,
     return model
 
 
-class MainMriDataset(data.Dataset):
+class MainDataset(data.Dataset):
     '''
     Attributes
     ----------
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     args = get_args()
     
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    logging.info(device)
+    logging.info(f"Device: {device}")
 
     model = train_model(device, args["root_dir"], args["abnormality_type"], 
                         args["batch_size"], args["n_epochs"], 
