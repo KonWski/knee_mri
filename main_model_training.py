@@ -13,6 +13,7 @@ from transforms import test_transforms, train_transforms
 def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
     parser.add_argument('--abnormality_type', type=str, help='abnormal/acl/meniscus')
+    parser.add_argument('--root_dir', type=str, help='root_dir/view_type')
     parser.add_argument('--batch_size', type=int, help='Number of images in batch')
     parser.add_argument('--n_epochs', type=int, help='Number of epochs')
     parser.add_argument('--load_model', type=str, default="N", help='Y -> continue learning using state_dict, train_history in save_path') 
