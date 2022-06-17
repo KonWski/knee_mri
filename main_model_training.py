@@ -158,9 +158,9 @@ class MainMriDataset(data.Dataset):
         self.state = state
         self.abnormality_type = abnormality_type
 
-        subfolder = "train" if state == "train" else "valid"
-        self.datasets_path = f"{self.root_dir}/{subfolder}"
-        self.labels = pd.read_csv(f"{self.root_dir}/{subfolder}-{self.abnormality_type}.csv", 
+        self.subfolder = "train" if state == "train" else "valid"
+        self.datasets_path = f"{self.root_dir}/{self.subfolder}"
+        self.labels = pd.read_csv(f"{self.root_dir}/{self.subfolder}-{self.abnormality_type}.csv", 
                                       names=["id", "abnormality"], 
                                       dtype={"id": str, "abnormality": int})
         self.transform = transform
@@ -174,9 +174,9 @@ class MainMriDataset(data.Dataset):
         label = image_row["abnormality"]
         image_index = image_row["id"]
 
-        image_axial = np.load(f"{self.root_dir}/axial/{image_index}.npy")
-        image_coronal = np.load(f"{self.root_dir}/coronal/{image_index}.npy")
-        image_sagittal = np.load(f"{self.root_dir}/sagittal/{image_index}.npy")
+        image_axial = np.load(f"{self.root_dir}/{self.subfolder}/axial/{image_index}.npy")
+        image_coronal = np.load(f"{self.root_dir}/{self.subfolder}/coronal/{image_index}.npy")
+        image_sagittal = np.load(f"{self.root_dir}/{self.subfolder}/sagittal/{image_index}.npy")
 
         if self.transform:
             image_axial = self.transform(image_axial)
