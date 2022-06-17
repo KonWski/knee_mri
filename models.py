@@ -7,6 +7,7 @@ import logging
 import pandas as pd
 from datetime import datetime
 import os
+from typing import Dict
 
 class SubnetMri(nn.Module):
     '''
@@ -89,12 +90,12 @@ class MriNet(nn.Module):
         # final classification layer
         self.classifier = nn.Linear(3, 1)
 
-    def forward(self, x):
+    def forward(self, x: Dict):
 
         # output from each of model
-        output_subnet_axial = self.subnet_axial(x)
-        output_subnet_coronal = self.subnet_coronal(x)
-        output_subnet_sagittal = self.subnet_sagittal(x)
+        output_subnet_axial = self.subnet_axial(x["axial"])
+        output_subnet_coronal = self.subnet_coronal(x["coronal"])
+        output_subnet_sagittal = self.subnet_sagittal(x["sagittal"])
 
         output_concat = torch.cat((output_subnet_axial, output_subnet_coronal, output_subnet_sagittal), dim=0)
         output = torch.sigmoid(self.classifier(output_concat))
