@@ -174,9 +174,9 @@ class MainMriDataset(data.Dataset):
         label = image_row["abnormality"]
         image_index = image_row["id"]
 
-        image_axial = np.load(f"{self.dataset_path}/axial/{image_index}.npy")
-        image_coronal = np.load(f"{self.dataset_path}/coronal/{image_index}.npy")
-        image_sagittal = np.load(f"{self.dataset_path}/sagittal/{image_index}.npy")
+        image_axial = np.load(f"{self.root_dir}/axial/{image_index}.npy")
+        image_coronal = np.load(f"{self.root_dir}/coronal/{image_index}.npy")
+        image_sagittal = np.load(f"{self.root_dir}/sagittal/{image_index}.npy")
 
         if self.transform:
             image_axial = self.transform(image_axial)
