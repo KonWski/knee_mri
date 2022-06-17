@@ -7,8 +7,9 @@ import logging
 import pandas as pd
 from datetime import datetime
 import os
+from typing import Dict
 
-class SubnetMri(nn.Module):
+class ViewMriNet(nn.Module):
     '''
     Submodel specialized in recognizing specific abnormality using one of 3 views.
     Build on basis of pretrained model.
@@ -48,7 +49,7 @@ class SubnetMri(nn.Module):
         return output
 
 
-class MriNet(nn.Module):
+class MainMriNet(nn.Module):
     '''
     Main model responsible for recognizing specific abnormality.
     Build on basis of 3 submodel each specialized in specific view
@@ -57,31 +58,31 @@ class MriNet(nn.Module):
     ----------
 
     '''
-    def __init__(self, model_path: str, abnormality_type: str, load_weights: bool=True):
+    def __init__(self, model_path: str, abnormality_type: str):
         super().__init__()
 
         config = self.load_final_model_config(model_path, abnormality_type)
 
         # load template models        
-        self.subnet_axial = SubnetMri(config["axial"]["pretrained_model_type"])
-        self.subnet_coronal = SubnetMri(config["coronal"]["pretrained_model_type"])
-        self.subnet_sagittal = SubnetMri(config["sagittal"]["pretrained_model_type"])
-
-        if load_weights:
-            
-            optimizer_axial = SGD(self.subnet_axial.classifier.parameters(), lr=0.01)
-            subnet_axial, optimizer, last_epoch = load_checkpoint(self.subnet_axial.classifier, optimizer_axial, model_path)
-            self.subnet_axial = subnet_axial
-
-            optimizer_coronal = SGD(self.subnet_coronal.classifier.parameters(), lr=0.01)
-            subnet_coronal, optimizer, last_epoch = load_checkpoint(self.subnet_coronal.classifier, optimizer_coronal, model_path)
-            self.subnet_coronal = subnet_coronal
-
-            optimizer_sagittal = SGD(self.subnet_sagittal.classifier.parameters(), lr=0.01)
-            subnet_sagittal, optimizer, last_epoch = load_checkpoint(self.subnet_sagittal.classifier, optimizer_sagittal, model_path)
-            self.subnet_sagittal = subnet_sagittal
+        self.subnet_axial = ViewMriNet(config["axial"]["pretrained_model_type"])
+        self.subnet_coronal = ViewMriNet(config["coronal"]["pretrained_model_type"])
+        self.subnet_sagittal = ViewMriNet(config["sagittal"]["pretrained_model_type"])
         
-        # turn off all 
+        dummy_optimizer = SGD(self.subnet_axial.classifier.parameters(), lr=0.01)
+
+        axial_model_path = config["axial"]["checkpoint_path"]
+        subnet_axial, optimizer, last_epoch = load_checkpoint(self.subnet_axial, dummy_optimizer, axial_model_path)
+        self.subnet_axial = subnet_axial
+
+        coronal_model_path = config["coronal"]["checkpoint_path"]
+        subnet_coronal, optimizer, last_epoch = load_checkpoint(self.subnet_coronal, dummy_optimizer, coronal_model_path)
+        self.subnet_coronal = subnet_coronal
+
+        sagittal_model_path = config["sagittal"]["checkpoint_path"]
+        subnet_sagittal, optimizer, last_epoch = load_checkpoint(self.subnet_sagittal, dummy_optimizer, sagittal_model_path)
+        self.subnet_sagittal = subnet_sagittal
+        
+        # turn off  grads in all parameters 
         for model in [self.subnet_axial, self.subnet_coronal, self.subnet_sagittal]:
             for param in model.parameters():
                 param.requires_grad = False
@@ -89,12 +90,12 @@ class MriNet(nn.Module):
         # final classification layer
         self.classifier = nn.Linear(3, 1)
 
-    def forward(self, x):
+    def forward(self, image_axial, image_coronal, image_sagittal):
 
         # output from each of model
-        output_subnet_axial = self.subnet_axial(x)
-        output_subnet_coronal = self.subnet_coronal(x)
-        output_subnet_sagittal = self.subnet_sagittal(x)
+        output_subnet_axial = self.subnet_axial(image_axial)
+        output_subnet_coronal = self.subnet_coronal(image_coronal)
+        output_subnet_sagittal = self.subnet_sagittal(image_sagittal)
 
         output_concat = torch.cat((output_subnet_axial, output_subnet_coronal, output_subnet_sagittal), dim=0)
         output = torch.sigmoid(self.classifier(output_concat))
@@ -139,17 +140,17 @@ def get_pretrained_model(model_name: str):
     return model
 
 
-def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
+def load_checkpoint(model: nn.Module, optimizer: torch.optim, checkpoint_path: str):
     '''
     loads model checkpoint from given path
 
     Parameters
     ----------
     model : nn.Module
-            One of models defined in pretrained_models scripts
+        One of models defined in pretrained_models scripts
     optimizer : torch.optim
-    model_path : str
-                 Path to directory with checkpoints
+    checkpoint_path : str
+        Path to checkpoint
 
     Notes
     -----
@@ -164,11 +165,6 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
                 - accuracy from last epoch testing
                 - save time
     '''
-
-    # load checkpoint with highest epoch number
-    train_history = pd.read_csv(f"{model_path}/train_history.csv", sep="|")
-    last_train_epoch = train_history[train_history["epoch"] == train_history["epoch"].max()]
-    checkpoint_path = last_train_epoch["checkpoint_path"].iloc[0]
     checkpoint = torch.load(checkpoint_path)
 
     # load parameters from checkpoint
@@ -188,7 +184,7 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
     return model, optimizer, epoch
 
 
-def save_checkpoint(checkpoint: dict, model_path: str):
+def save_checkpoint(checkpoint: dict, model_path: str, final_model: bool):
     '''
     saves model to checkpoint
 
@@ -207,7 +203,6 @@ def save_checkpoint(checkpoint: dict, model_path: str):
     model_path : str
                  Path to directory with checkpoints
     '''
-
     checkpoint_path = f"{model_path}/{checkpoint['pretrained_model_type']}_{checkpoint['epoch']}"
 
     # save checkpoint
@@ -215,7 +210,7 @@ def save_checkpoint(checkpoint: dict, model_path: str):
 
     # new row in train history
     new_log = pd.DataFrame({
-                            "pretrained_model_type": [checkpoint["pretrained_model_type"]], 
+                            "pretrained_model_type": [checkpoint["pretrained_model_type"]],
                             "epoch": [checkpoint["epoch"]],
                             "train_loss": [checkpoint["train_loss"]],
                             "train_acc": [checkpoint["train_acc"]],

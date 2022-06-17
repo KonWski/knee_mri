@@ -7,8 +7,8 @@ from torch.optim import SGD
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
-from models import SubnetMri, MriNet, load_checkpoint, save_checkpoint
-import torchvision.transforms as transforms
+from models import ViewMriNet, load_checkpoint, save_checkpoint
+from transforms import test_transforms, train_transforms
 
 def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
@@ -20,7 +20,7 @@ def get_args():
     parser.add_argument('--n_epochs', type=int, help='Number of epochs')
     parser.add_argument('--model_path', type=str, default=None, help='Path to directory to save/load model state dictionary')
     parser.add_argument('--load_model', type=str, default="N", help='Y -> continue learning using state_dict, train_history in save_path')
-
+ 
     args = vars(parser.parse_args())
     
     # directory safe check
@@ -30,10 +30,11 @@ def get_args():
 
     # parse str to boolean
     str_true = ["Y", "y", "Yes", "yes", "true", "True"]
-    if args["load_model"] in str_true:
-        args["load_model"] = True
-    else:
-        args["load_model"] = False
+    for param in args.keys():
+        if args[param] in str_true:
+            args[param] = True
+        else:
+            args[param] = False
 
     # print input parameters
     logging.info(8*"-")
@@ -46,7 +47,7 @@ def get_args():
     return args
 
 
-class MriDataset(data.Dataset):
+class ViewDataset(data.Dataset):
     '''
     Attributes
     ----------
@@ -99,35 +100,21 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
     trains model for recognising selected abnormality on images taken from choosen view
     '''
 
-    # basic transformations + augmentation
-    train_transforms = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
-        transforms.Lambda(lambda x: torch.unsqueeze(x, dim=0)),
-        transforms.Lambda(lambda x: x.permute(2, 0, 1, 3)),
-        transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1))
-        ])
-
-    # basic transformations
-    test_transforms = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Lambda(lambda x: torch.unsqueeze(x, dim=0)),
-            transforms.Lambda(lambda x: x.permute(2, 0, 1, 3)),
-            transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1))
-            ])
-
-    # initiate model and optimizer
-    model = SubnetMri(pretrained_model_type)
+    model = ViewMriNet(pretrained_model_type)
     model = model.to(device)
-
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
     criterion = nn.BCELoss()
     start_epoch = 0
 
     # set weights if training process should be restarted
     if load_model and model_path is not None:
-        model, optimizer, last_epoch = load_checkpoint(model, optimizer, model_path)
+
+        # load checkpoint with highest epoch number
+        train_history = pd.read_csv(f"{model_path}/train_history.csv", sep="|")
+        last_train_epoch = train_history[train_history["epoch"] == train_history["epoch"].max()]
+        checkpoint_path = last_train_epoch["checkpoint_path"].iloc[0]
+
+        model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
         start_epoch = last_epoch + 1
 
     for epoch in range(start_epoch, n_epochs):
@@ -142,7 +129,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             running_loss = 0.0
             running_corrects = 0
 
-            dataset = MriDataset(root_dir, state, view_type, abnormality_type, transform = data_transforms)
+            dataset = ViewDataset(root_dir, state, view_type, abnormality_type, transform = data_transforms)
             len_dataset = len(dataset)
             dataloader = DataLoader(dataset, batch_size, shuffle=True)
 
@@ -200,7 +187,9 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
     args = get_args()
+
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    logging.info(f"Device: {device}")
 
     model = train_model(device, args["root_dir"], args["view_type"], args["abnormality_type"], 
                             args["pretrained_model_type"], args["batch_size"], args["n_epochs"], 
