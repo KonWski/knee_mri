@@ -27,7 +27,8 @@ def get_args():
 
     # parse str to boolean
     str_true = ["Y", "y", "Yes", "yes", "true", "True"]
-    for param in args.keys():
+    bool_params = ["load_model"]
+    for param in bool_params:
         if args[param] in str_true:
             args[param] = True
         else:
