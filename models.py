@@ -165,7 +165,7 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, checkpoint_path: s
                 - accuracy from last epoch testing
                 - save time
     '''
-
+    print(f"checkpoint_path: {checkpoint_path}")
     checkpoint = torch.load(checkpoint_path)
 
     # load parameters from checkpoint
