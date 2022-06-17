@@ -140,17 +140,17 @@ def get_pretrained_model(model_name: str):
     return model
 
 
-def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
+def load_checkpoint(model: nn.Module, optimizer: torch.optim, checkpoint_path: str):
     '''
     loads model checkpoint from given path
 
     Parameters
     ----------
     model : nn.Module
-            One of models defined in pretrained_models scripts
+        One of models defined in pretrained_models scripts
     optimizer : torch.optim
-    model_path : str
-                 Path to directory with checkpoints
+    checkpoint_path : str
+        Path to checkpoint
 
     Notes
     -----
@@ -166,10 +166,6 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, model_path: str):
                 - save time
     '''
 
-    # load checkpoint with highest epoch number
-    train_history = pd.read_csv(f"{model_path}/train_history.csv", sep="|")
-    last_train_epoch = train_history[train_history["epoch"] == train_history["epoch"].max()]
-    checkpoint_path = last_train_epoch["checkpoint_path"].iloc[0]
     checkpoint = torch.load(checkpoint_path)
 
     # load parameters from checkpoint
