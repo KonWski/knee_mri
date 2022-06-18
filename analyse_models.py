@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from models import ViewMriNet, load_checkpoint
 from transforms import test_transforms
 from view_model_training import ViewDataset
+import logging
 
 def validate_model(checkpoint_path: str, root_dir: str, device):
     '''
@@ -26,8 +27,17 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
     view_type = checkpoint_path_split[-3]
     pretrained_model_type = checkpoint_path_split[-4]
 
+    # model
+    model = ViewMriNet(pretrained_model_type)
+    optimizer = SGD(model.classifier.parameters(), lr=0.01)
+    model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
+    criterion = nn.BCELoss()
+    model.eval()
+
     for state in ["train", "test"]:
         
+        logging.info(f"Started validation for {state}")
+
         # calculated parameters
         running_loss = 0.0
         running_tp = 0
@@ -40,15 +50,13 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
         dataloader = DataLoader(dataset, batch_size=1)
         len_dataset = len(dataset)
 
-        # model
-        model = ViewMriNet(pretrained_model_type)
-        optimizer = SGD(model.classifier.parameters(), lr=0.01)
-        model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
-        criterion = nn.BCELoss()
-        model.eval()
-
         for id, batch in enumerate(dataloader, 0):
             
+            # progress
+            if id % 100 == 0 and id != 0:
+                progress = round(((id + 1) / len_dataset) * 100, 1)
+                logging.info(f"Progress: {progress}%")
+
             # send images, labels to device
             images, labels = batch
             images = images.to(device)
