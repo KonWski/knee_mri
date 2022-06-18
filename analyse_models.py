@@ -27,81 +27,82 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
     view_type = checkpoint_path_split[-3]
     pretrained_model_type = checkpoint_path_split[-4]
 
-    # model
-    model = ViewMriNet(pretrained_model_type)
-    optimizer = SGD(model.classifier.parameters(), lr=0.01)
-    model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
-    criterion = nn.BCELoss()
-    model.eval()
-    logging.info(f"Model loaded")
+    with torch.no_grad():
 
-    for state in ["train", "test"]:
-        
-        logging.info(f"Started validation for {state}")
+        # model
+        model = ViewMriNet(pretrained_model_type)
+        optimizer = SGD(model.classifier.parameters(), lr=0.01)
+        model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
+        criterion = nn.BCELoss()
+        model.eval()
 
-        # calculated parameters
-        running_loss = 0.0
-        running_tp = 0
-        running_fp = 0
-        running_tn = 0
-        running_fn = 0
-
-        # dataset, dataloader
-        dataset = ViewDataset(root_dir, state, view_type, abnormality_type, transform = test_transforms)
-        dataloader = DataLoader(dataset, batch_size=1)
-        len_dataset = len(dataset)
-
-        for id, batch in enumerate(dataloader, 0):
+        for state in ["train", "test"]:
             
-            # progress
-            if id % 100 == 0 and id != 0:
-                progress = round(((id + 1) / len_dataset) * 100, 1)
-                logging.info(f"Progress: {progress}%")
+            logging.info(f"Started validation for {state}")
 
-            # send images, labels to device
-            images, labels = batch
-            images = images.to(device)
-            labels = labels.to(device)
+            # calculated parameters
+            running_loss = 0.0
+            running_tp = 0
+            running_fp = 0
+            running_tn = 0
+            running_fn = 0
 
-            # calculate loss
-            outputs = model(images)                    
-            loss = criterion(outputs.float(), labels.float())
-            
-            pred = int(torch.round(outputs).item())
-            label = labels.item()
+            # dataset, dataloader
+            dataset = ViewDataset(root_dir, state, view_type, abnormality_type, transform = test_transforms)
+            dataloader = DataLoader(dataset, batch_size=1)
+            len_dataset = len(dataset)
 
-            # tp, fp, tn, fn
-            if pred == label:
-                if pred == 1:
-                    running_tp += 1
+            for id, batch in enumerate(dataloader, 0):
+                
+                # progress
+                if id % 100 == 0 and id != 0:
+                    progress = round(((id + 1) / len_dataset) * 100, 1)
+                    logging.info(f"Progress: {progress}%")
+
+                # send images, labels to device
+                images, labels = batch
+                images = images.to(device)
+                labels = labels.to(device)
+
+                # calculate loss
+                outputs = model(images)                    
+                loss = criterion(outputs.float(), labels.float())
+                
+                pred = int(torch.round(outputs).item())
+                label = labels.item()
+
+                # tp, fp, tn, fn
+                if pred == label:
+                    if pred == 1:
+                        running_tp += 1
+                    else:
+                        running_tn += 1
                 else:
-                    running_tn += 1
-            else:
-                if pred == 1:
-                    running_fp += 1
-                else:
-                    running_fn += 1
+                    if pred == 1:
+                        running_fp += 1
+                    else:
+                        running_fn += 1
 
-            running_loss += loss.item()
+                running_loss += loss.item()
 
-            if state == "test":
-                ids.append(id)
-                preds.append(pred)
+                if state == "test":
+                    ids.append(id)
+                    preds.append(pred)
 
-        # statistics
-        loss = round(running_loss / len_dataset, 2)
-        accuracy = round((running_tp + running_tn) / len_dataset, 2)
-        precission = round(running_tp / (running_tp + running_fp), 2)
-        recall = round(running_tp / (running_tp + running_fn), 2)
-        f1_score = round((2 * precission * recall) / (precission + recall), 2)
+    # statistics
+    loss = round(running_loss / len_dataset, 2)
+    accuracy = round((running_tp + running_tn) / len_dataset, 2)
+    precission = round(running_tp / (running_tp + running_fp), 2)
+    recall = round(running_tp / (running_tp + running_fn), 2)
+    f1_score = round((2 * precission * recall) / (precission + recall), 2)
 
-        stats[f"{state}_loss"] = loss
-        stats[f"{state}_accuracy"] = accuracy
-        stats[f"{state}_precission"] = precission
-        stats[f"{state}_recall"] = recall
-        stats[f"{state}_f1_score"] = f1_score
+    stats[f"{state}_loss"] = loss
+    stats[f"{state}_accuracy"] = accuracy
+    stats[f"{state}_precission"] = precission
+    stats[f"{state}_recall"] = recall
+    stats[f"{state}_f1_score"] = f1_score
 
-        # predictions for concrete observations (only for test)
-        observations_report = pd.DataFrame({"id": ids, "preds": preds})
+    # predictions for concrete observations (only for test)
+    observations_report = pd.DataFrame({"id": ids, "preds": preds})
 
     return stats, observations_report
