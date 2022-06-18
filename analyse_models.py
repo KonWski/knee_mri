@@ -58,10 +58,13 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
             # calculate loss
             outputs = model(images)                    
             loss = criterion(outputs.float(), labels.float())
-            preds = torch.round(outputs)
+            
+            pred = torch.round(outputs).item()
+            label = labels.item()
 
-            print(f"outputs: {outputs}")
-            print(f"preds: {preds}")
+            print(f"pred: {pred}")
+            print(f"label: {label}")
+
 
             running_loss += loss.item()
             running_corrects += torch.sum(preds == labels.data).item()
