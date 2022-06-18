@@ -33,6 +33,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
     model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
     criterion = nn.BCELoss()
     model.eval()
+    logging.info(f"Model loaded")
 
     for state in ["train", "test"]:
         
