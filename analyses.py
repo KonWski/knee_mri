@@ -33,8 +33,9 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
         model = ViewMriNet(pretrained_model_type)
         optimizer = SGD(model.classifier.parameters(), lr=0.01)
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
-        criterion = nn.BCELoss()
+        model = model.to(device)
         model.eval()
+        criterion = nn.BCELoss()
 
         for state in ["train", "test"]:
             
@@ -89,18 +90,18 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
                     ids.append(id)
                     preds.append(pred)
 
-    # statistics
-    loss = round(running_loss / len_dataset, 2)
-    accuracy = round((running_tp + running_tn) / len_dataset, 2)
-    precission = round(running_tp / (running_tp + running_fp), 2)
-    recall = round(running_tp / (running_tp + running_fn), 2)
-    f1_score = round((2 * precission * recall) / (precission + recall), 2)
+            # statistics
+            loss = round(running_loss / len_dataset, 2)
+            accuracy = round((running_tp + running_tn) / len_dataset, 2)
+            precission = round(running_tp / (running_tp + running_fp), 2)
+            recall = round(running_tp / (running_tp + running_fn), 2)
+            f1_score = round((2 * precission * recall) / (precission + recall), 2)
 
-    stats[f"{state}_loss"] = loss
-    stats[f"{state}_accuracy"] = accuracy
-    stats[f"{state}_precission"] = precission
-    stats[f"{state}_recall"] = recall
-    stats[f"{state}_f1_score"] = f1_score
+            stats[f"{state}_loss"] = loss
+            stats[f"{state}_accuracy"] = accuracy
+            stats[f"{state}_precission"] = precission
+            stats[f"{state}_recall"] = recall
+            stats[f"{state}_f1_score"] = f1_score
 
     # predictions for concrete observations (only for test)
     observations_report = pd.DataFrame({"id": ids, "preds": preds})
