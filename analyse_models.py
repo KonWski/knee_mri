@@ -1,14 +1,10 @@
 import pandas as pd
-import numpy as np
-import logging
 import torch
 from torch import nn
 from torch.optim import SGD
-import torch.utils.data as data
 from torch.utils.data import DataLoader
-import argparse
 from models import ViewMriNet, load_checkpoint
-from transforms import test_transforms, train_transforms
+from transforms import test_transforms
 from view_model_training import ViewDataset
 
 def validate_model(checkpoint_path: str, root_dir: str, device):
@@ -18,7 +14,11 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
     - info which observation was properly classified
     '''
 
-    report = ""
+    # observations, preds, labels
+    stats = {}
+    ids = []
+    preds = []
+    labels = []
 
     # extract from checkpoint_path key infos
     checkpoint_path_split = checkpoint_path.split("/")
@@ -30,7 +30,6 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
         
         # calculated parameters
         running_loss = 0.0
-        running_corrects = 0
         running_tp = 0
         running_fp = 0
         running_tn = 0
@@ -59,17 +58,41 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
             outputs = model(images)                    
             loss = criterion(outputs.float(), labels.float())
             
-            pred = torch.round(outputs).item()
+            pred = int(torch.round(outputs).item())
             label = labels.item()
 
-            print(f"pred: {pred}")
-            print(f"label: {label}")
-
+            # tp, fp, tn, fn
+            if pred == label:
+                if pred == 1:
+                    running_tp += 1
+                else:
+                    running_tn += 1
+            else:
+                if pred == 1:
+                    running_fp += 1
+                else:
+                    running_fn += 1
 
             running_loss += loss.item()
-            running_corrects += torch.sum(preds == labels.data).item()
 
-    # save and print epoch statistics
-    epoch_loss = round(running_loss / len_dataset, 2)
-    epoch_acc = round(running_corrects / len_dataset, 2)
+            if state == "test":
+                ids.append(id)
+                preds.append(pred)
 
+        # statistics
+        loss = round(running_loss / len_dataset, 2)
+        accuracy = round((running_tp + running_tn) / len_dataset, 2)
+        precission = round(running_tp / (running_tp + running_fp), 2)
+        recall = round(running_tp / (running_tp + running_fn), 2)
+        f1_score = round((2 * precission * recall) / (precission + recall), 2)
+
+        stats[f"{state}_loss"] = loss
+        stats[f"{state}_accuracy"] = accuracy
+        stats[f"{state}_precission"] = precission
+        stats[f"{state}_recall"] = recall
+        stats[f"{state}_f1_score"] = f1_score
+
+        # predictions for concrete observations (only for test)
+        observations_report = pd.DataFrame({"id": ids, "preds": preds})
+
+    return stats, observations_report
