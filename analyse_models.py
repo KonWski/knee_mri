@@ -24,6 +24,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
     checkpoint_path_split = checkpoint_path.split("/")
     abnormality_type = checkpoint_path_split[-2]
     view_type = checkpoint_path_split[-3]
+    pretrained_model_type = checkpoint_path_split[-4]
 
     for state in ["train", "test"]:
         
@@ -41,6 +42,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
         len_dataset = len(dataset)
 
         # model
+        model = ViewMriNet(pretrained_model_type)
         optimizer = SGD(model.classifier.parameters(), lr=0.01)
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
         criterion = nn.BCELoss()
