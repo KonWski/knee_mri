@@ -224,7 +224,7 @@ def save_checkpoint(checkpoint: dict, model_path: str, final_model: bool):
     train_history_path = f"{model_path}/train_history.csv"
     
     if not os.path.exists(train_history_path):
-        new_log.to_csv(train_history_path, sep="|")
+        new_log.to_csv(train_history_path, sep="|", index=False)
     else:
         train_history = pd.read_csv(train_history_path, sep="|")
         train_history = pd.concat([train_history, new_log], ignore_index=True)
