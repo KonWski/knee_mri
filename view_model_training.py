@@ -118,10 +118,14 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             logging.info("Model already trained for given number of epochs")
             exit()
 
+    elif load_model and not exists(train_history_path):
+        logging.warning("Further model training impossible - no saved checkpoints")
+        exit()
+
     # check if start training is possible
     elif not load_model and exists(train_history_path):
-        logging.warning("Model already has saved checkpoints. If You wish to rerun whole \
-                    training, delete manually existing files (checkpoints, train_history) and start over.")
+        logging.warning("""Model already has saved checkpoints. If You wish to rerun whole 
+                           training, delete manually existing files (checkpoints, train_history) and start over""")
         exit()
 
     model = ViewMriNet(pretrained_model_type)
