@@ -184,7 +184,7 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, checkpoint_path: s
     return model, optimizer, epoch
 
 
-def save_checkpoint(checkpoint: dict, model_path: str, final_model: bool):
+def save_checkpoint(checkpoint: dict, model_path: str):
     '''
     saves model to checkpoint
 
