@@ -26,12 +26,13 @@ def get_args():
     
     # directory safe check
     if args["view_type"] not in args["model_path"] or args["abnormality_type"] not in args["model_path"]:
-        logging.warn("Abnormality type or view type not found in model path")
+        logging.warning("Abnormality type or view type not found in model path")
         exit()
 
     # parse str to boolean
     str_true = ["Y", "y", "Yes", "yes", "true", "True"]
-    for param in args.keys():
+    bool_params = ["load_model"]
+    for param in bool_params:
         if args[param] in str_true:
             args[param] = True
         else:
@@ -119,7 +120,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
     # check if start training is possible
     elif not load_model and exists(train_history_path):
-        logging.warn("Model already has saved checkpoints. If You wish to rerun whole \
+        logging.warning("Model already has saved checkpoints. If You wish to rerun whole \
                     training, delete manually existing files (checkpoints, train_history) and start over.")
         exit()
 
