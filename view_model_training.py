@@ -114,7 +114,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
         checkpoint_path = last_training_history["checkpoint_path"].iloc[0]
 
         # check if training already finished
-        if n_epochs >= last_epoch + 1:
+        if n_epochs <= last_epoch + 1:
             logging.info("Model already trained for given number of epochs")
             exit()
 
