@@ -25,8 +25,9 @@ def get_args():
     args = vars(parser.parse_args())
     
     # directory safe check
-    if args["view_type"] not in args["model_path"] or args["abnormality_type"] not in args["model_path"]:
-        logging.warning("Abnormality type or view type not found in model path")
+    if args["view_type"] not in args["model_path"] or args["abnormality_type"] not in args["model_path"] \
+            or args["pretrained_model_type"] not in args["model_path"]:
+        logging.warning("Abnormality type/view type/model type not found in model path")
         exit()
 
     # parse str to boolean
