@@ -8,7 +8,7 @@ from transforms import test_transforms
 from view_model_training import ViewDataset
 import logging
 
-def validate_model(checkpoint_path: str, root_dir: str, device):
+def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation_report: bool):
     '''
     - TP, TN, FP TN
     - precission, recall, f1 score
@@ -29,7 +29,6 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
             }
     ids = []
     preds = []
-    labels = []
 
     with torch.no_grad():
 
@@ -90,7 +89,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
 
                 running_loss += loss.item()
 
-                if state == "test":
+                if state == "test" and fill_observation_report:
                     ids.append(id)
                     preds.append(pred)
 
