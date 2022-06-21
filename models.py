@@ -17,13 +17,16 @@ class ViewMriNet(nn.Module):
     Attributes
     ----------
     pretrained_model_type: str
-                           resnet18, resnet34, alexnet
+        resnet18, resnet34, alexnet
+    transfer_learning_type: str
+
     '''
 
-    def __init__(self, pretrained_model_type: str):
+    def __init__(self, pretrained_model_type: str, transfer_learning_type: str):
         super().__init__()
         self.pretrained_model_type = pretrained_model_type
-        self.pretrained_model = get_pretrained_model(pretrained_model_type)
+        self.transfer_learning_type = transfer_learning_type
+        self.pretrained_model = get_pretrained_model(pretrained_model_type, self.transfer_learning_type)
         self.avg_pooling_layer = nn.AdaptiveAvgPool2d((12, 12))
         self.max_pooling_layer = nn.AdaptiveMaxPool2d((12, 12))
         self.flatten = nn.Flatten()
@@ -107,7 +110,7 @@ class MainMriNet(nn.Module):
             return yaml.safe_load(config_stream)
 
     
-def get_pretrained_model(model_name: str):
+def get_pretrained_model(model_name: str, transfer_learning_type: str):
     '''
     Downloads pretrained model from PyTorch, modifies its layers to output features
 
@@ -134,8 +137,9 @@ def get_pretrained_model(model_name: str):
     else:
         raise Exception(f"Pretrained model type not found: {model_name}")
 
-    for param in model.parameters():
-        param.requires_grad = False
+    if transfer_learning_type == "feature_extraction":
+        for param in model.parameters():
+            param.requires_grad = False
 
     return model
 
