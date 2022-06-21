@@ -15,17 +15,21 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
     - info which observation was properly classified
     '''
 
-    # observations, preds, labels
-    stats = {}
-    ids = []
-    preds = []
-    labels = []
-
     # extract from checkpoint_path key infos
     checkpoint_path_split = checkpoint_path.split("/")
     abnormality_type = checkpoint_path_split[-2]
     view_type = checkpoint_path_split[-3]
     pretrained_model_type = checkpoint_path_split[-4]
+
+    # observations, preds, labels
+    stats = {
+            "abnormality_type": [abnormality_type], 
+            "view_type": [view_type], 
+            "pretrained_model_type": [pretrained_model_type]
+            }
+    ids = []
+    preds = []
+    labels = []
 
     with torch.no_grad():
 
@@ -97,11 +101,14 @@ def validate_model(checkpoint_path: str, root_dir: str, device):
             recall = round(running_tp / (running_tp + running_fn), 2)
             f1_score = round((2 * precission * recall) / (precission + recall), 2)
 
-            stats[f"{state}_loss"] = loss
-            stats[f"{state}_accuracy"] = accuracy
-            stats[f"{state}_precission"] = precission
-            stats[f"{state}_recall"] = recall
-            stats[f"{state}_f1_score"] = f1_score
+            stats[f"{state}_loss"] = [loss]
+            stats[f"{state}_accuracy"] = [accuracy]
+            stats[f"{state}_precission"] = [precission]
+            stats[f"{state}_recall"] = [recall]
+            stats[f"{state}_f1_score"] = [f1_score]
+
+        stats["epoch"] = [last_epoch]
+        stats = pd.DataFrame(stats)
 
     # predictions for concrete observations (only for test)
     observations_report = pd.DataFrame({"id": ids, "preds": preds})
