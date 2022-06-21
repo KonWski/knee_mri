@@ -96,9 +96,9 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
             # statistics
             loss = round(running_loss / len_dataset, 2)
             accuracy = round((running_tp + running_tn) / len_dataset, 2)
-            precission = round(running_tp / (running_tp + running_fp), 2)
-            recall = round(running_tp / (running_tp + running_fn), 2)
-            f1_score = round((2 * precission * recall) / (precission + recall), 2)
+            precission = round(running_tp / (running_tp + running_fp), 2) if running_tp + running_fp else 0
+            recall = round(running_tp / (running_tp + running_fn), 2) if running_tp + running_fn else 0
+            f1_score = round((2 * precission * recall) / (precission + recall), 2) if precission + recall else 0
 
             stats[f"{state}_loss"] = [loss]
             stats[f"{state}_accuracy"] = [accuracy]
