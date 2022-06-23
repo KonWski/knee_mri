@@ -93,6 +93,11 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                     ids.append(id)
                     preds.append(pred)
 
+            print(f"running_tp: {running_tp}")
+            print(f"running_tn: {running_tn}")
+            print(f"running_fp: {running_fp}")
+            print(f"running_fn: {running_fn}")
+
             # statistics
             loss = round(running_loss / len_dataset, 2)
             accuracy = round((running_tp + running_tn) / len_dataset, 2)
