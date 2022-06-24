@@ -98,7 +98,7 @@ class ViewDataset(data.Dataset):
         return image, label
 
 
-def train_model(device, root_dir: str, view_type: str, abnormality_type: str, feature_extraction: str, 
+def train_model(device, root_dir: str, view_type: str, abnormality_type: str, transfer_learning_type: str, 
         pretrained_model_type: str, batch_size: int, n_epochs: int, load_model: bool = False, model_path: str = None):
     '''
     trains model for recognising selected abnormality on images taken from choosen view
@@ -130,7 +130,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, fe
                            training, delete manually existing files (checkpoints, train_history) and start over""")
         exit()
 
-    model = ViewMriNet(pretrained_model_type, feature_extraction)
+    model = ViewMriNet(pretrained_model_type, transfer_learning_type)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
     criterion = nn.BCELoss()
     start_epoch = 0
@@ -217,5 +217,6 @@ if __name__ == "__main__":
     logging.info(f"Device: {device}")
 
     model = train_model(device, args["root_dir"], args["view_type"], args["abnormality_type"], 
-                            args["pretrained_model_type"], args["batch_size"], args["n_epochs"], 
-                            args["load_model"], args["model_path"])
+                                args["transfer_learning_type"], args["pretrained_model_type"], 
+                                args["batch_size"], args["n_epochs"], args["load_model"], 
+                                args["model_path"])
