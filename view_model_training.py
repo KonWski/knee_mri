@@ -108,7 +108,8 @@ class ViewDataset(data.Dataset):
         pos = len(self.labels[self.labels["abnormality"] == 1])
         neg = len(self.labels[self.labels["abnormality"] == 0])
 
-        weight_neg = pos / neg
+        # weight_neg = pos / neg
+        weight_neg = 1
         weight_pos = neg / pos
 
         return torch.tensor([weight_neg, weight_pos])
