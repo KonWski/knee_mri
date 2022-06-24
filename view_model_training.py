@@ -86,6 +86,7 @@ class ViewDataset(data.Dataset):
         self.use_weights = use_weights
         if self.use_weights:
             self.weights = self._get_weights()
+        print(self.weights)
 
     def __len__(self):
         return len(self.labels)
