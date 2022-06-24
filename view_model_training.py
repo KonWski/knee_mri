@@ -111,7 +111,7 @@ class ViewDataset(data.Dataset):
         weight_neg = pos / neg
         weight_pos = neg / pos
 
-        return [weight_neg, weight_pos]
+        return torch.tensor([weight_neg, weight_pos])
 
 
 def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pretrained_model_type: str, 
