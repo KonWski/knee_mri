@@ -108,8 +108,8 @@ class ViewDataset(data.Dataset):
         pos = len(self.labels[self.labels["abnormality"] == 1])
         neg = len(self.labels[self.labels["abnormality"] == 0])
 
-        weight_neg = neg / pos
-        weight_pos = pos / neg
+        weight_neg = pos / neg
+        weight_pos = neg / pos
 
         return [weight_neg, weight_pos]
 
