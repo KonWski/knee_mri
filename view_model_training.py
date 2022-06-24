@@ -19,6 +19,7 @@ def get_args():
     parser.add_argument('--pretrained_model_type', type=str, help='Type of model used for feature extraction AlexNet/Resnet/Inception')
     parser.add_argument('--batch_size', type=int, help='Number of images in batch')
     parser.add_argument('--n_epochs', type=int, help='Number of epochs')
+    parser.add_argument('--use_weights', type=str, help='weight observations in loss function, weights calculated automatically')
     parser.add_argument('--model_path', type=str, default=None, help='Path to directory to save/load model state dictionary')
     parser.add_argument('--load_model', type=str, default="N", help='Y -> continue learning using state_dict, train_history in save_path')
  
@@ -32,7 +33,7 @@ def get_args():
 
     # parse str to boolean
     str_true = ["Y", "y", "Yes", "yes", "true", "True"]
-    bool_params = ["load_model"]
+    bool_params = ["load_model", "use_weights"]
     for param in bool_params:
         if args[param] in str_true:
             args[param] = True
@@ -63,11 +64,13 @@ class ViewDataset(data.Dataset):
         axial/coronal/sagittal
     abnormality_type: str
         abnormal/acl/meniscus
+    use_weights: bool
+        calculate loss
     transform: 
         set of transformations used for image preprocessing
     '''
 
-    def __init__(self, root_dir, state, view_type, abnormality_type, transform=None):
+    def __init__(self, root_dir, state, view_type, abnormality_type, use_weights=False, transform=None):
         super().__init__()
         self.root_dir = root_dir
         self.state = state
@@ -80,6 +83,9 @@ class ViewDataset(data.Dataset):
                                       names=["id", "abnormality"], 
                                       dtype={"id": str, "abnormality": int})
         self.transform = transform
+        self.use_weights = use_weights
+        if self.use_weights:
+            self.weights = self._get_weights()
 
     def __len__(self):
         return len(self.labels)
@@ -96,9 +102,19 @@ class ViewDataset(data.Dataset):
 
         return image, label
 
+    def _get_weights(self):
+        
+        pos = len(self.labels[self.labels["abnormality"] == 1])
+        neg = len(self.labels[self.labels["abnormality"] == 0])
+
+        weight_neg = neg / pos
+        weight_pos = pos / neg
+
+        return [weight_neg, weight_pos]
+
 
 def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pretrained_model_type: str, 
-        batch_size: int, n_epochs: int, load_model: bool = False, model_path: str = None):
+        batch_size: int, n_epochs: int, use_weights: bool, load_model: bool = False, model_path: str = None):
     '''
     trains model for recognising selected abnormality on images taken from choosen view
     '''
@@ -131,7 +147,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
     model = ViewMriNet(pretrained_model_type)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
-    criterion = nn.BCELoss()
+    criterion = nn.BCEWithLogitsLoss()
     start_epoch = 0
 
     # set weights if training process should be restarted
@@ -153,9 +169,12 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             running_loss = 0.0
             running_corrects = 0
 
-            dataset = ViewDataset(root_dir, state, view_type, abnormality_type, transform = data_transforms)
-            len_dataset = len(dataset)
+            dataset = ViewDataset(root_dir, state, view_type, abnormality_type, use_weights, transform = data_transforms)
             dataloader = DataLoader(dataset, batch_size, shuffle=True)
+            len_dataset = len(dataset)
+
+            if use_weights:
+                criterion.weights = dataset.weights
 
             if state == "train":
                 model.train()
@@ -216,5 +235,5 @@ if __name__ == "__main__":
     logging.info(f"Device: {device}")
 
     model = train_model(device, args["root_dir"], args["view_type"], args["abnormality_type"], 
-                            args["pretrained_model_type"], args["batch_size"], args["n_epochs"], 
-                            args["load_model"], args["model_path"])
+                            args["pretrained_model_type"], args["batch_size"], args["n_epochs"],
+                            args["use_weights"], args["load_model"], args["model_path"])
