@@ -103,12 +103,14 @@ class ViewDataset(data.Dataset):
         return image, label
 
     def _get_weights(self):
-        
+        '''
+        calculates pos weight for each class according to the suggestion
+        given in: https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html
+        '''
         pos = len(self.labels[self.labels["abnormality"] == 1])
         neg = len(self.labels[self.labels["abnormality"] == 0])
 
-        # weight_neg = pos / neg
-        weight_neg = 1
+        weight_neg = pos / neg
         weight_pos = neg / pos
 
         return torch.tensor([weight_neg, weight_pos])
@@ -175,7 +177,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             len_dataset = len(dataset)
 
             if use_weights:
-                criterion.weights = dataset.weights
+                criterion.pos_weight = dataset.weights
 
             if state == "train":
                 model.train()
