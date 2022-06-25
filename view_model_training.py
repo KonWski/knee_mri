@@ -148,12 +148,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
     model = ViewMriNet(pretrained_model_type)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
+    criterion = nn.BCEWithLogitsLoss()
     start_epoch = 0
-
-    if use_weights:
-        criterion = nn.BCEWithLogitsLoss()
-    else:
-        criterion = nn.BCELoss()
 
     # set weights if training process should be restarted
     if load_model:
