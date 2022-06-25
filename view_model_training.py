@@ -149,10 +149,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
     model = ViewMriNet(pretrained_model_type)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
-    for id, param in enumerate(model.parameters()):
-        if param.requires_grad:
-            print(f"id: {id}")
-            print(f"shape: {param.shape}")
     criterion = nn.BCEWithLogitsLoss()
     start_epoch = 0
 
@@ -206,7 +202,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                     # calculate loss
                     outputs = model(images)                    
                     loss = criterion(outputs.float(), labels.float())
-                    preds = torch.round(outputs)
+                    preds = torch.round(torch.sigmoid(outputs))
 
                     if state == "train":
                         loss.backward()
