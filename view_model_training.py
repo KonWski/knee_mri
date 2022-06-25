@@ -186,11 +186,12 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             for id, batch in enumerate(dataloader, 0):
 
                 with torch.set_grad_enabled(state == 'train'):
-                    
-                    for id, param in enumerate(model.parameters()):
-                        print(f"id: {id}")
-                        print(f"shape: {param.shape}")
-                        
+
+                    for id_param, param in enumerate(model.parameters()):
+                        if param.requires_grad:
+                            print(f"id: {id_param}")
+                            print(f"shape: {param.shape}")
+
                     # progress bar
                     if id % 100 == 0 and id != 0:
                         progress = round(((id + 1) / len_dataset) * 100, 1)
