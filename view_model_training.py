@@ -183,12 +183,17 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             else:
                 model.eval()
 
+            for id_param, param in enumerate(model.parameters()):
+                if param.requires_grad and state == "train":
+                    print(f"id: {id_param}")
+                    print(f"shape: {param.shape}")
+
             for id, batch in enumerate(dataloader, 0):
 
                 with torch.set_grad_enabled(state == 'train'):
 
                     for id_param, param in enumerate(model.parameters()):
-                        if param.requires_grad:
+                        if param.requires_grad and state == "test":
                             print(f"id: {id_param}")
                             print(f"shape: {param.shape}")
 
