@@ -149,8 +149,12 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
 
     model = ViewMriNet(pretrained_model_type)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
-    criterion = nn.BCEWithLogitsLoss()
     start_epoch = 0
+    
+    if use_weights:
+        criterion = nn.BCEWithLogitsLoss()
+    else:
+        criterion = nn.BCELoss()
 
     # set weights if training process should be restarted
     if load_model:
@@ -183,19 +187,9 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
             else:
                 model.eval()
 
-            for id_param, param in enumerate(model.parameters()):
-                if param.requires_grad and state == "train":
-                    print(f"id: {id_param}")
-                    print(f"shape: {param.shape}")
-
             for id, batch in enumerate(dataloader, 0):
 
                 with torch.set_grad_enabled(state == 'train'):
-
-                    for id_param, param in enumerate(model.parameters()):
-                        if param.requires_grad and state == "test":
-                            print(f"id: {id_param}")
-                            print(f"shape: {param.shape}")
 
                     # progress bar
                     if id % 100 == 0 and id != 0:
