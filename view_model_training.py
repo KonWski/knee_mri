@@ -86,7 +86,6 @@ class ViewDataset(data.Dataset):
         self.use_weights = use_weights
         if self.use_weights:
             self.weights = self._get_weights()
-        print(self.weights)
 
     def __len__(self):
         return len(self.labels)
@@ -150,7 +149,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
     model = ViewMriNet(pretrained_model_type)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
     start_epoch = 0
-    
+
     if use_weights:
         criterion = nn.BCEWithLogitsLoss()
     else:
