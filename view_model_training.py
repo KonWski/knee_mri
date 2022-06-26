@@ -179,6 +179,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
             len_dataset = len(dataset)
 
             if use_weights:
+                pos_weights = dataset.weights.to(device)
                 criterion.pos_weight = dataset.weights
 
             if state == "train":
