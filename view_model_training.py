@@ -180,7 +180,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
             if use_weights:
                 pos_weights = dataset.weights.to(device)
-                criterion.pos_weight = dataset.weights
+                criterion.pos_weight = pos_weights
 
             if state == "train":
                 model.train()
