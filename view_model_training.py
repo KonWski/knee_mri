@@ -16,6 +16,7 @@ def get_args():
     parser.add_argument('--view_type', type=str, help='axial/coronal/sagittal')
     parser.add_argument('--abnormality_type', type=str, help='abnormal/acl/meniscus')
     parser.add_argument('--root_dir', type=str, help='root_dir/view_type')
+    parser.add_argument('--transfer_learning_type', type=str, default="feature_extraction", help='feature_extraction/fine_tunning')
     parser.add_argument('--pretrained_model_type', type=str, help='Type of model used for feature extraction AlexNet/Resnet/Inception')
     parser.add_argument('--batch_size', type=int, help='Number of images in batch')
     parser.add_argument('--n_epochs', type=int, help='Number of epochs')
@@ -117,8 +118,8 @@ class ViewDataset(data.Dataset):
         return torch.tensor([pos_weight])
 
 
-def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pretrained_model_type: str, 
-        batch_size: int, n_epochs: int, use_weights: bool, load_model: bool = False, model_path: str = None):
+def train_model(device, root_dir: str, view_type: str, abnormality_type: str, transfer_learning_type: str,
+        pretrained_model_type: str, batch_size: int, n_epochs: int, use_weights: bool, load_model: bool = False, model_path: str = None):
     '''
     trains model for recognising selected abnormality on images taken from choosen view
     '''
@@ -149,7 +150,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, pr
                            training, delete manually existing files (checkpoints, train_history) and start over""")
         exit()
 
-    model = ViewMriNet(pretrained_model_type)
+    model = ViewMriNet(pretrained_model_type, transfer_learning_type)
     optimizer = SGD(model.classifier.parameters(), lr=0.01)
     criterion = nn.BCEWithLogitsLoss()
     start_epoch = 0
