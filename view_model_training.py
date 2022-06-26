@@ -240,5 +240,6 @@ if __name__ == "__main__":
     logging.info(f"Device: {device}")
 
     model = train_model(device, args["root_dir"], args["view_type"], args["abnormality_type"], 
-                            args["pretrained_model_type"], args["batch_size"], args["n_epochs"],
-                            args["use_weights"], args["load_model"], args["model_path"])
+                            args["transfer_learning_type"], args["pretrained_model_type"], 
+                            args["batch_size"], args["n_epochs"], args["use_weights"], 
+                            args["load_model"], args["model_path"])
