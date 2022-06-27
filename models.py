@@ -25,10 +25,10 @@ class ViewMriNet(nn.Module):
         self.pretrained_model_type = pretrained_model_type
         self.transfer_learning_type = transfer_learning_type
         self.pretrained_model = get_pretrained_model(pretrained_model_type, self.transfer_learning_type)
-        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((None, 3))
-        self.max_pooling_layer = nn.AdaptiveMaxPool2d((None, 3))
+        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((2, 2))
+        self.max_pooling_layer = nn.AdaptiveMaxPool2d((2, 2))
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(228, 1)
+        self.classifier = nn.Linear(4, 1)
 
     def forward(self, x):
 
