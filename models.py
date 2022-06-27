@@ -121,10 +121,12 @@ def get_pretrained_model(model_name: str, transfer_learning_type: str):
 
     if model_name == "resnet18":
         model = models.resnet18(pretrained=True)
+        model.avgpool = nn.Identity()
         model.fc = nn.Identity()
 
     elif model_name == "resnet34":
         model = models.resnet34(pretrained=True)
+        model.avgpool = nn.Identity()
         model.fc = nn.Identity()
 
     elif model_name == "alexnet":
