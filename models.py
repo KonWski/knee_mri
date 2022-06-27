@@ -27,6 +27,7 @@ class ViewMriNet(nn.Module):
         self.pretrained_model = get_pretrained_model(pretrained_model_type, self.transfer_learning_type)
         self.avg_pooling_layer = nn.AdaptiveAvgPool2d((6, 6))
         self.max_pooling_layer = nn.AdaptiveMaxPool2d((2, 2))
+        self.potato = nn.Dropout(p=0.5, inplace=False)
         self.flatten = nn.Flatten()
         self.classifier = nn.Linear(256, 1)
 
@@ -49,8 +50,8 @@ class ViewMriNet(nn.Module):
 
         # features_concat = torch.cat((features_avg, features_max), dim=0)
         # print(f"features_concat shape: {features_concat.shape}")
-
-        output = self.classifier(features_avg)
+        potato = self.potato(features_avg)
+        output = self.classifier(potato)
         
         return output
 
