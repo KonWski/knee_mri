@@ -39,7 +39,7 @@ class ViewMriNet(nn.Module):
         features_avg = self.avg_pooling_layer(features)
         features_max = self.max_pooling_layer(features)
 
-        features_avg = self.flatten(features_avg)
+        # features_avg = self.flatten(features_avg)
         # features_max = self.flatten(features_max)
         
         # features_avg = torch.squeeze(features_avg, dim=0)
