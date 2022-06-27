@@ -25,10 +25,10 @@ class ViewMriNet(nn.Module):
         self.pretrained_model_type = pretrained_model_type
         self.transfer_learning_type = transfer_learning_type
         self.pretrained_model = get_pretrained_model(pretrained_model_type, self.transfer_learning_type)
-        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((2, 2))
+        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((6, 6))
         self.max_pooling_layer = nn.AdaptiveMaxPool2d((2, 2))
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(8, 1)
+        self.classifier = nn.Linear(256, 1)
 
     def forward(self, x):
 
@@ -40,17 +40,17 @@ class ViewMriNet(nn.Module):
         features_max = self.max_pooling_layer(features)
 
         features_avg = self.flatten(features_avg)
-        features_max = self.flatten(features_max)
+        # features_max = self.flatten(features_max)
         
-        features_avg = torch.squeeze(features_avg, dim=0)
-        # print(f"features_avg shape: {features_avg.shape}")
-        features_max = torch.squeeze(features_max, dim=0)
-        # print(f"features_max shape: {features_max.shape}")
+        # features_avg = torch.squeeze(features_avg, dim=0)
+        # # print(f"features_avg shape: {features_avg.shape}")
+        # features_max = torch.squeeze(features_max, dim=0)
+        # # print(f"features_max shape: {features_max.shape}")
 
-        features_concat = torch.cat((features_avg, features_max), dim=0)
+        # features_concat = torch.cat((features_avg, features_max), dim=0)
         # print(f"features_concat shape: {features_concat.shape}")
 
-        output = self.classifier(features_concat)
+        output = self.classifier(features_avg)
         
         return output
 
