@@ -224,7 +224,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
                 # print statistics
                 running_loss += loss.item()
-                running_corrects += torch.sum(preds == labels.data).item()
+                running_corrects += torch.sum(torch.argmax(preds) == torch.argmax(labels)).item()
                 print(f"running corrects: {running_corrects}")
 
             # save and print epoch statistics
