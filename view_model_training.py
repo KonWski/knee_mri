@@ -103,9 +103,9 @@ class ViewDataset(data.Dataset):
 
         # label encoding
         if label == 1:
-            label = torch.FloatTensor([[0, 1]])
+            label = torch.FloatTensor([0, 1])
         elif label == 0:
-            label = torch.FloatTensor([[1, 0]])
+            label = torch.FloatTensor([1, 0])
 
         return image, label
 
@@ -205,7 +205,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     images, labels = batch
                     images = images.to(device)
                     labels = labels.to(device)
-                    labels = labels[0]
                     optimizer.zero_grad()
 
                     print(f"labels: {labels}")
