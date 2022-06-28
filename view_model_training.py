@@ -102,10 +102,10 @@ class ViewDataset(data.Dataset):
             image = self.transform(image)
 
         # label encoding
-        if label == 0:
-            label = torch.tensor([[0, 1]])[0]
-        else:
-            label = torch.tensor([[1, 0]])[0]
+        if label == 1:
+            label = torch.FloatTensor([[0, 1]])
+        elif label == 0:
+            label = torch.FloatTensor([[1, 0]])
 
         return image, label
 
@@ -205,10 +205,17 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     images, labels = batch
                     images = images.to(device)
                     labels = labels.to(device)
+                    labels = labels[0]
                     optimizer.zero_grad()
+
+                    print(f"labels: {labels}")
+                    print(f"labels shape: {labels.shape}")
 
                     # calculate loss
                     outputs = model(images).to(device)
+                    print(f"outputs: {outputs}")
+                    print(f"outputs shape: {outputs.shape}")
+
                     loss = criterion(outputs.float(), labels.float())
                     preds = torch.round(torch.sigmoid(outputs))
 
