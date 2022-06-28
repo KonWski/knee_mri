@@ -103,9 +103,9 @@ class ViewDataset(data.Dataset):
 
         # label encoding
         if label == 1:
-            label = torch.FloatTensor([0, 1])
+            label = torch.tensor([0, 1])
         elif label == 0:
-            label = torch.FloatTensor([1, 0])
+            label = torch.tensor([1, 0])
 
         return image, label
 
