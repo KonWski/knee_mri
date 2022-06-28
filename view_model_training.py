@@ -3,6 +3,7 @@ import numpy as np
 import logging
 import torch
 from torch import nn
+from torch.nn.functional import softmax
 from torch.optim import SGD
 import torch.utils.data as data
 from torch.utils.data import DataLoader
@@ -210,11 +211,11 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     # calculate loss
                     outputs = model(images).to(device)
                     loss = criterion(outputs.float(), labels.float())
-                    preds = torch.sigmoid(outputs)
-                    print(f"preds_0: {preds}")
-                    preds = torch.round(preds)
                     
-                    print(f"preds_1: {preds}")
+                    proba = softmax(outputs)                    
+                    preds = torch.round(proba)
+                    print(f"proba: {proba}")
+                    print(f"preds: {preds}")
                     print(f"labels: {labels}")
 
                     if state == "train":
