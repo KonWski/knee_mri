@@ -204,13 +204,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     optimizer.zero_grad()
 
                     # calculate loss
-                    outputs = torch.argmax(model(images)).to(device)
+                    outputs = model(images).to(device)
                     print(f"outputs: {outputs}")
-                    print(type(outputs))
-                    print(outputs.shape)
-                    print(f"labels: {labels}")                    
-                    print(type(labels))
-                    print(labels.shape)
                     loss = criterion(outputs.float(), labels.float())
                     preds = torch.round(torch.sigmoid(outputs))
 
