@@ -28,7 +28,7 @@ class ViewMriNet(nn.Module):
         self.avg_pooling_layer = nn.AdaptiveAvgPool2d((12, 12))
         self.max_pooling_layer = nn.AdaptiveMaxPool2d((12, 12))
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(288, 1)
+        self.classifier = nn.Linear(288, 2)
 
     def forward(self, x):
 

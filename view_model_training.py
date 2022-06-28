@@ -101,6 +101,12 @@ class ViewDataset(data.Dataset):
         if self.transform:
             image = self.transform(image)
 
+        # label encoding
+        if label == 0:
+            label = torch.tensor([0, 1])
+        else:
+            label = torch.tensor([1, 0])
+
         return image, label
 
     def _get_weights(self):
@@ -112,8 +118,6 @@ class ViewDataset(data.Dataset):
         neg = len(self.labels[self.labels["abnormality"] == 0])
 
         pos_weight = neg / pos
-        # weight_neg = pos / neg
-        # weight_pos = neg / pos
 
         return torch.tensor([pos_weight])
 
@@ -205,7 +209,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
                     # calculate loss
                     outputs = model(images).to(device)
-                    print(f"outputs: {outputs}")
                     loss = criterion(outputs.float(), labels.float())
                     preds = torch.round(torch.sigmoid(outputs))
 
