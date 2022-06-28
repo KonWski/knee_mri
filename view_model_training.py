@@ -203,6 +203,9 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                         logging.info(f"Progress: {progress}%, loss: {progress_loss}, accuracy: {progress_acc}")
                     
                     images, labels = batch
+                    print(f"labels: {labels}")
+                    print(f"labels shape: {labels.shape}")
+
                     images = images.to(device)
                     labels = labels.to(device)
                     optimizer.zero_grad()
