@@ -33,7 +33,7 @@ class ViewMriNet(nn.Module):
 
         self.pretrained_model = get_pretrained_model(pretrained_model_type, self.transfer_learning_type)
         self.pooling_layer = nn.AdaptiveAvgPool2d(1)
-        self.classifier = nn.Linear(256, 2)
+        self.classifier = nn.Linear(256, 1)
 
     def forward(self, x):
 
