@@ -209,13 +209,12 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
                     # calculate loss
                     outputs = model(images).to(device)
-                    print(f"outputs: {outputs}")
-                    print(f"outputs shape: {outputs.shape}")
-
                     loss = criterion(outputs.float(), labels.float())
-                    preds = torch.round(torch.sigmoid(outputs))
+                    preds = torch.sigmoid(outputs)
+                    print(f"preds_0: {preds}")
+                    preds = torch.round(preds)
                     
-                    print(f"preds: {preds}")
+                    print(f"preds_1: {preds}")
                     print(f"labels: {labels}")
 
                     if state == "train":
