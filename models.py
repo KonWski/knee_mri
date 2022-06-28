@@ -25,34 +25,45 @@ class ViewMriNet(nn.Module):
         self.pretrained_model_type = pretrained_model_type
         self.transfer_learning_type = transfer_learning_type
         self.pretrained_model = get_pretrained_model(pretrained_model_type, self.transfer_learning_type)
-        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((6, 6))
-        self.max_pooling_layer = nn.AdaptiveMaxPool2d((2, 2))
-        self.potato = nn.Dropout(p=0.5, inplace=False)
-        self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(256, 1)
+        # self.avg_pooling_layer = nn.AdaptiveAvgPool2d((6, 6))
+        # self.max_pooling_layer = nn.AdaptiveMaxPool2d((2, 2))
+        # self.potato = nn.Dropout(p=0.5, inplace=False)
+        # self.flatten = nn.Flatten()
+        # self.classifier = nn.Linear(256, 1)
+
+        self.pretrained_model = get_pretrained_model(pretrained_model_type, self.transfer_learning_type)
+        self.pooling_layer = nn.AdaptiveAvgPool2d(1)
+        self.classifer = nn.Linear(256, 2)
 
     def forward(self, x):
 
-        x = torch.squeeze(x, dim=0)        
-        features = self.pretrained_model(x)        
-        features = torch.unsqueeze(features, dim=0)
+        # x = torch.squeeze(x, dim=0)        
+        # features = self.pretrained_model(x)        
+        # features = torch.unsqueeze(features, dim=0)
         
-        features_avg = self.avg_pooling_layer(features)
-        features_max = self.max_pooling_layer(features)
+        # features_avg = self.avg_pooling_layer(features)
+        # features_max = self.max_pooling_layer(features)
 
-        # features_avg = self.flatten(features_avg)
-        # features_max = self.flatten(features_max)
+        # # features_avg = self.flatten(features_avg)
+        # # features_max = self.flatten(features_max)
         
-        # features_avg = torch.squeeze(features_avg, dim=0)
-        # # print(f"features_avg shape: {features_avg.shape}")
-        # features_max = torch.squeeze(features_max, dim=0)
-        # # print(f"features_max shape: {features_max.shape}")
+        # # features_avg = torch.squeeze(features_avg, dim=0)
+        # # # print(f"features_avg shape: {features_avg.shape}")
+        # # features_max = torch.squeeze(features_max, dim=0)
+        # # # print(f"features_max shape: {features_max.shape}")
 
-        # features_concat = torch.cat((features_avg, features_max), dim=0)
-        # print(f"features_concat shape: {features_concat.shape}")
-        potato = self.potato(features_avg)
-        output = self.classifier(potato)
+        # # features_concat = torch.cat((features_avg, features_max), dim=0)
+        # # print(f"features_concat shape: {features_concat.shape}")
+        # potato = self.potato(features_avg)
+        # output = self.classifier(potato)
         
+        x = torch.squeeze(x, dim=0) 
+        features = self.pretrained_model.features(x)
+        pooled_features = self.pooling_layer(features)
+        pooled_features = pooled_features.view(pooled_features.size(0), -1)
+        flattened_features = torch.max(pooled_features, 0, keepdim=True)[0]
+        output = self.classifer(flattened_features)
+
         return output
 
 
