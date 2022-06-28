@@ -214,9 +214,9 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     
                     proba = softmax(outputs)                    
                     preds = torch.round(proba)
-                    print(f"proba: {proba}")
-                    print(f"preds: {preds}")
-                    print(f"labels: {labels}")
+                    # print(f"proba: {proba}")
+                    # print(f"preds: {preds}")
+                    # print(f"labels: {labels}")
 
                     if state == "train":
                         loss.backward()
