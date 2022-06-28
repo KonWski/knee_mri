@@ -193,8 +193,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                 model.eval()
 
             for id, batch in enumerate(dataloader, 0):
-                
-                print(f"id: {id}")
 
                 with torch.set_grad_enabled(state == 'train'):
 
@@ -217,8 +215,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     proba = softmax(outputs)                    
                     preds = torch.round(proba)
                     # print(f"proba: {proba}")
-                    # print(f"preds: {preds}")
-                    # print(f"labels: {labels}")
+                    print(f"preds: {preds}")
+                    print(f"labels: {labels}")
 
                     if state == "train":
                         loss.backward()
@@ -227,8 +225,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                 # print statistics
                 running_loss += loss.item()
                 running_corrects += torch.sum(preds == labels.data).item()
-                
-                # print(f"running corrects: {running_corrects}")
+                print(f"running corrects: {running_corrects}")
 
             # save and print epoch statistics
             epoch_loss = round(running_loss / len_dataset, 2)
