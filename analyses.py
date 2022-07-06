@@ -71,7 +71,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
 
                 # calculate loss
                 outputs = model(images).to(device)                  
-                loss = criterion(outputs.float(), labels.float())
+                loss = criterion(outputs.float(), label.float())
                 
                 proba = softmax(outputs)                    
                 pred = torch.round(proba)
