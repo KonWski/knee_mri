@@ -22,7 +22,6 @@ class ViewMriNet(nn.Module):
 
     def __init__(self, pretrained_model_type: str, transfer_learning_type: str):
         super().__init__()
-        print(transfer_learning_type)
         self.pretrained_model_type = pretrained_model_type
         self.transfer_learning_type = transfer_learning_type
         self.pretrained_model = get_pretrained_model(pretrained_model_type, self.transfer_learning_type)
