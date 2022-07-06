@@ -67,7 +67,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 # send images, labels to device
                 images, labels = batch
                 images = images.to(device)
-                labels = labels[0].to(device)
+                label = labels[0].to(device)
 
                 # calculate loss
                 outputs = model(images).to(device)                  
