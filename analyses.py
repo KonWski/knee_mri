@@ -7,6 +7,7 @@ from models import ViewMriNet, load_checkpoint
 from transforms import test_transforms
 from view_model_training import ViewDataset
 import logging
+from torch.nn.functional import softmax
 
 def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation_report: bool):
     '''
@@ -72,8 +73,8 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 outputs = model(images).to(device)                  
                 loss = criterion(outputs.float(), labels.float())
                 
-                pred = int(torch.round(outputs).item())
-                label = labels.item()
+                proba = softmax(outputs)                    
+                pred = torch.round(proba)
 
                 # tp, fp, tn, fn
                 if pred == label:
