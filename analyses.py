@@ -67,13 +67,13 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 # send images, labels to device
                 images, labels = batch
                 images = images.to(device)
-                label = labels[0].to(device)
+                labels = labels[0].to(device)
 
                 # calculate loss
                 outputs = model(images).to(device)
                 print(f"outputs: {outputs}")
-                print(f"label: {label}")                  
-                loss = criterion(outputs.float(), label.float())
+                print(f"label: {labels}")                  
+                loss = criterion(outputs.float(), labels.float())
                 
                 proba = softmax(outputs)                    
                 pred = torch.round(proba)
@@ -82,7 +82,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 print(f"pred: {pred}")
 
                 # tp, fp, tn, fn
-                if pred == label:
+                if pred == labels:
                     if pred == 1:
                         running_tp += 1
                     else:
