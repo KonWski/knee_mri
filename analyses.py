@@ -70,7 +70,9 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 label = labels[0].to(device)
 
                 # calculate loss
-                outputs = model(images).to(device)                  
+                outputs = model(images).to(device)
+                print(f"outputs: {outputs}")
+                print(f"label: {label}")                  
                 loss = criterion(outputs.float(), label.float())
                 
                 proba = softmax(outputs)                    
