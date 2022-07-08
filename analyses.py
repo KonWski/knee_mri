@@ -39,14 +39,12 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
         model = model.to(device)
         model.eval()
-        criterion = nn.BCEWithLogitsLoss()
 
         for state in ["train", "test"]:
             
             logging.info(f"Started validation for {state}")
 
             # calculated parameters
-            running_loss = 0.0
             running_tp = 0
             running_fp = 0
             running_tn = 0
@@ -71,9 +69,6 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
 
                 # calculate loss
                 outputs = model(images).to(device)
-                print(f"outputs: {outputs}")
-                print(f"label: {labels}")                  
-                loss = criterion(outputs.float(), labels.float())
                 
                 proba = softmax(outputs)                    
                 pred = torch.round(proba)
@@ -82,18 +77,16 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 print(f"pred: {pred}")
 
                 # tp, fp, tn, fn
-                if pred == labels:
-                    if pred == 1:
+                if torch.all(torch.eq(pred, labels)):
+                    if pred.item() == [0, 1]:
                         running_tp += 1
                     else:
                         running_tn += 1
                 else:
-                    if pred == 1:
+                    if pred.item() == [1, 0]:
                         running_fp += 1
                     else:
                         running_fn += 1
-
-                running_loss += loss.item()
 
                 if state == "test" and fill_observation_report:
                     ids.append(id)
@@ -105,13 +98,11 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
             print(f"running_fn: {running_fn}")
 
             # statistics
-            loss = round(running_loss / len_dataset, 2)
             accuracy = round((running_tp + running_tn) / len_dataset, 2)
             precission = round(running_tp / (running_tp + running_fp), 2) if running_tp + running_fp else 0
             recall = round(running_tp / (running_tp + running_fn), 2) if running_tp + running_fn else 0
             f1_score = round((2 * precission * recall) / (precission + recall), 2) if precission + recall else 0
 
-            stats[f"{state}_loss"] = [loss]
             stats[f"{state}_accuracy"] = [accuracy]
             stats[f"{state}_precission"] = [precission]
             stats[f"{state}_recall"] = [recall]
