@@ -72,7 +72,6 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 
                 proba = softmax(outputs)                    
                 pred = torch.round(proba)
-                print(f"pred: {pred.tolist()}")
 
                 # tp, fp, tn, fn
                 if torch.all(torch.eq(pred, labels)):
