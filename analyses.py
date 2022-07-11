@@ -34,7 +34,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
     with torch.no_grad():
 
         # model, transfer  learning type irrelevant
-        model = ViewMriNet(pretrained_model_type, "feature_extraction") 
+        model = ViewMriNet(pretrained_model_type, "fine_tunning") 
         optimizer = SGD(model.parameters(), lr=0.01)
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
         model = model.to(device)
