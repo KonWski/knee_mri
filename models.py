@@ -134,7 +134,7 @@ def get_pretrained_model(model_name: str, transfer_learning_type: str):
         model = models.alexnet(pretrained=True)
         model.avgpool = nn.Identity()
         model.classifier = nn.Identity()
-
+    
     else:
         raise Exception(f"Pretrained model type not found: {model_name}")
 

@@ -35,7 +35,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
 
         # model, transfer  learning type irrelevant
         model = ViewMriNet(pretrained_model_type, "feature_extraction") 
-        optimizer = SGD(model.classifier.parameters(), lr=0.01)
+        optimizer = SGD(model.parameters(), lr=0.01)
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
         model = model.to(device)
         model.eval()
