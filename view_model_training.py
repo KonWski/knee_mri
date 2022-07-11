@@ -119,8 +119,8 @@ class ViewDataset(data.Dataset):
         neg = len(self.labels[self.labels["abnormality"] == 0])
 
         pos_weight = neg / pos
-
-        return torch.tensor([pos_weight])
+        return torch.tensor([3.77])
+        # return torch.tensor([pos_weight])
 
 
 def train_model(device, root_dir: str, view_type: str, abnormality_type: str, transfer_learning_type: str,
