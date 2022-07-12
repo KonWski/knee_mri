@@ -70,19 +70,25 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 # calculate loss
                 outputs = model(images).to(device)
                 
-                proba = softmax(outputs)                    
+                proba = softmax(outputs)
+                print(f"proba: {proba}")          
                 pred = torch.round(proba)
+                print(f"pred: {pred}")
 
                 # tp, fp, tn, fn
                 if torch.all(torch.eq(pred, labels)):
                     if pred.tolist() == [0, 1]:
+                        print("running_tp += 1")
                         running_tp += 1
                     else:
+                        print("running_tn += 1")
                         running_tn += 1
                 else:
                     if pred.tolist() == [1, 0]:
+                        print("running_fp += 1")
                         running_fp += 1
                     else:
+                        print("running_fn += 1")
                         running_fn += 1
 
                 if state == "test" and fill_observation_report:
