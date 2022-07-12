@@ -171,7 +171,7 @@ def load_checkpoint(model: nn.Module, optimizer: torch.optim, checkpoint_path: s
                 - accuracy from last epoch testing
                 - save time
     '''
-    checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
 
     # load parameters from checkpoint
     model.load_state_dict(checkpoint["model_state_dict"])
