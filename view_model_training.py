@@ -4,7 +4,7 @@ import logging
 import torch
 from torch import nn
 from torch.nn.functional import softmax
-from torch.optim import SGD
+from torch.optim import SGD, Adam
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
@@ -156,7 +156,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
         exit()
 
     model = ViewMriNet(pretrained_model_type, transfer_learning_type)
-    optimizer = SGD(model.parameters(), lr=0.01)
+    # optimizer = SGD(model.parameters(), lr=0.01)
+    optimizer = Adam(model.parameters(), lr=1e-5, weight_decay=0.1)
     criterion = nn.BCEWithLogitsLoss()
     start_epoch = 0
 
