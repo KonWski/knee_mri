@@ -66,13 +66,16 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
 
                 # send images, labels to device
                 images, labels = batch
-                images = images.to(device)
                 labels = labels[0]
+
                 if torch.cuda.is_available():
                     labels = labels.to(device)
+                    images = images.to(device)
 
                 # calculate loss
-                outputs = model(images).to(device)
+                outputs = model(images)
+                if torch.cuda.is_available():
+                    outputs = outputs.to(device)
                 
                 proba = softmax(outputs)
                 print(f"proba: {proba}")          
