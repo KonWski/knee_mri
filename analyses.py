@@ -37,7 +37,9 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
         model = ViewMriNet(pretrained_model_type, "fine_tunning") 
         optimizer = SGD(model.parameters(), lr=0.01)
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
-        model = model.to(device)
+
+        if torch.cuda.is_available():
+            model = model.to(device)
         model.eval()
 
         for state in ["train", "test"]:
@@ -65,7 +67,9 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 # send images, labels to device
                 images, labels = batch
                 images = images.to(device)
-                labels = labels[0].to(device)
+                labels = labels[0]
+                if torch.cuda.is_available():
+                    labels = labels.to(device)
 
                 # calculate loss
                 outputs = model(images).to(device)
