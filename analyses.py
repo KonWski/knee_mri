@@ -59,7 +59,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
 
             for id, batch in enumerate(dataloader, 0):
                 print(f"id: {id}")
-                print(f"batch.size(): {batch.size()}")
+                print(f"batch: {batch[0]}")
                 # progress
                 if id % 100 == 0 and id != 0:
                     progress = round(((id + 1) / len_dataset) * 100, 1)
