@@ -93,10 +93,12 @@ class ViewDataset(data.Dataset):
         return len(self.labels)
 
     def __getitem__(self, index):
-        
+        print(f"index: {index}")
         image_row = self.labels.loc[index]
         label = image_row["abnormality"]
+        print(f"label: {label}")
         image_index = image_row["id"]
+        print(f"image_index: {image_index}")
         image = np.load(f"{self.dataset_path}/{image_index}.npy")
 
         if self.transform:
@@ -194,7 +196,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                 model.eval()
 
             for id, batch in enumerate(dataloader, 0):
-
+                print(f"id: {id}")
                 with torch.set_grad_enabled(state == 'train'):
 
                     # progress bar
