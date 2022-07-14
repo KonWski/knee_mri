@@ -122,7 +122,7 @@ class ViewDataset(data.Dataset):
 
         # pos_weight = neg / pos
         # return torch.tensor([3.77])
-        return torch.tensor([1, neg / pos])
+        return torch.tensor([1, 300])
 
 
 def train_model(device, root_dir: str, view_type: str, abnormality_type: str, transfer_learning_type: str,
@@ -202,7 +202,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                 model.eval()
 
             for id, batch in enumerate(dataloader, 0):
-                
+
                 with torch.set_grad_enabled(state == 'train'):
 
                     # progress bar
