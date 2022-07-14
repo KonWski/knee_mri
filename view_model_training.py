@@ -93,6 +93,7 @@ class ViewDataset(data.Dataset):
         return len(self.labels)
 
     def __getitem__(self, index):
+
         # print(f"index: {index}")
         image_row = self.labels.loc[index]
         label = image_row["abnormality"]
@@ -120,9 +121,9 @@ class ViewDataset(data.Dataset):
         pos = len(self.labels[self.labels["abnormality"] == 1])
         neg = len(self.labels[self.labels["abnormality"] == 0])
 
-        # pos_weight = neg / pos
+        pos_weight = neg / pos
         # return torch.tensor([3.77])
-        return torch.tensor([1, 300])
+        return torch.tensor([1, 2 * pos_weight])
 
 
 def train_model(device, root_dir: str, view_type: str, abnormality_type: str, transfer_learning_type: str,
