@@ -178,8 +178,13 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
             logging.info(f"Epoch {epoch}, State: {state}")
 
+            # calculated parameters
             running_loss = 0.0
             running_corrects = 0
+            running_tp = 0
+            running_fp = 0
+            running_tn = 0
+            running_fn = 0
 
             dataset = ViewDataset(root_dir, state, view_type, abnormality_type, use_weights, transform = data_transforms)
             dataloader = DataLoader(dataset, batch_size, shuffle=False)
@@ -197,7 +202,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                 model.eval()
 
             for id, batch in enumerate(dataloader, 0):
-                # print(f"id: {id}")
+                
                 with torch.set_grad_enabled(state == 'train'):
 
                     # progress bar
@@ -206,6 +211,10 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                         progress_loss =  round(running_loss / (id + 1), 2)
                         progress_acc = round(running_corrects / (id + 1), 2)
                         logging.info(f"Progress: {progress}%, loss: {progress_loss}, accuracy: {progress_acc}")
+                        print(f"running_tp: {running_tp}")
+                        print(f"running_tn: {running_tn}")
+                        print(f"running_fp: {running_fp}")
+                        print(f"running_fn: {running_fn}")
                     
                     images, labels = batch
                     images = images.to(device)
@@ -218,9 +227,18 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     
                     proba = softmax(outputs)                    
                     preds = torch.round(proba)
-                    # print(f"proba: {proba}")
-                    # print(f"preds: {preds}")
-                    # print(f"labels: {labels}")
+
+                    # tp, fp, tn, fn
+                    if torch.all(torch.eq(preds, labels)):
+                        if preds.tolist() == [0, 1]:
+                            running_tp += 1
+                        else:
+                            running_tn += 1
+                    else:
+                        if preds.tolist() == [1, 0]:
+                            running_fn += 1
+                        else:
+                            running_fp += 1  
 
                     if state == "train":
                         loss.backward()
@@ -229,7 +247,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                 # print statistics
                 running_loss += loss.item()
                 running_corrects += torch.sum(torch.argmax(preds) == torch.argmax(labels)).item()
-                # print(f"running corrects: {running_corrects}")
 
             # save and print epoch statistics
             epoch_loss = round(running_loss / len_dataset, 2)
