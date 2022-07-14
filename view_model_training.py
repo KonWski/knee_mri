@@ -93,14 +93,17 @@ class ViewDataset(data.Dataset):
         return len(self.labels)
 
     def __getitem__(self, index):
-
-        # print(f"index: {index}")
+        
         image_row = self.labels.loc[index]
         label = image_row["abnormality"]
-        # print(f"label: {label}")
         image_index = image_row["id"]
-        # print(f"image_index: {image_index}")
         image = np.load(f"{self.dataset_path}/{image_index}.npy")
+
+        if self.state == "test":
+            print(f"index: {index}")
+            print(f"label: {label}")
+            print(f"image_index: {image_index}")
+            print(f"image path: {self.dataset_path}/{image_index}.npy")
 
         if self.transform:
             image = self.transform(image)
