@@ -235,6 +235,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     preds = torch.round(proba)
 
                     print(f"Preds: {preds.tolist()}")
+                    print(f"Labels: {labels.tolist()}")
                     print(f"loss with weights: {loss}")
                     print(f"loss without weights: {loss_without_weights}")
 
