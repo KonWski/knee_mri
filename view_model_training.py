@@ -231,11 +231,12 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     loss = criterion(outputs.float(), labels.float())
                     loss_without_weights = criterion_without_weights(outputs.float(), labels.float())
 
-                    print(f"loss with weights: {loss}")
-                    print(f"loss without weights: {loss_without_weights}")
-
                     proba = softmax(outputs)                    
                     preds = torch.round(proba)
+
+                    print(f"Preds: {preds.tolist()}")
+                    print(f"loss with weights: {loss}")
+                    print(f"loss without weights: {loss_without_weights}")
 
                     # tp, fp, tn, fn
                     if torch.all(torch.eq(preds, labels)):
