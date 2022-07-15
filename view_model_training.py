@@ -126,7 +126,7 @@ class ViewDataset(data.Dataset):
 
         pos_weight = neg / pos
         # return torch.tensor([3.77])
-        return torch.tensor([1, 2 * pos_weight])
+        return torch.tensor([1, pos_weight])
 
 
 def train_model(device, root_dir: str, view_type: str, abnormality_type: str, transfer_learning_type: str,
@@ -197,8 +197,9 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
             if use_weights:
                 weights = dataset.weights.to(device)
                 criterion = nn.BCEWithLogitsLoss(weights)
-            else:
-                criterion = nn.BCEWithLogitsLoss()
+            
+            # drop after debug
+            criterion_without_weights = nn.BCEWithLogitsLoss()
 
             if state == "train":
                 model.train()
@@ -228,7 +229,11 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     # calculate loss
                     outputs = model(images).to(device)
                     loss = criterion(outputs.float(), labels.float())
-                    
+                    loss_without_weights = criterion_without_weights(outputs.float(), labels.float())
+
+                    print(f"loss with weights: {loss}")
+                    print(f"loss without weights: {loss_without_weights}")
+
                     proba = softmax(outputs)                    
                     preds = torch.round(proba)
 
