@@ -99,12 +99,6 @@ class ViewDataset(data.Dataset):
         image_index = image_row["id"]
         image = np.load(f"{self.dataset_path}/{image_index}.npy")
 
-        if self.state == "test":
-            print(f"index: {index}")
-            print(f"label: {label}")
-            print(f"image_index: {image_index}")
-            print(f"image path: {self.dataset_path}/{image_index}.npy")
-
         if self.transform:
             image = self.transform(image)
 
@@ -199,7 +193,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                 criterion = nn.BCEWithLogitsLoss(pos_weight=weights)
             
             # drop after debug
-            # criterion_without_weights = nn.BCEWithLogitsLoss()
+            criterion_without_weights = nn.BCEWithLogitsLoss()
 
             if state == "train":
                 model.train()
@@ -229,15 +223,15 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     # calculate loss
                     outputs = model(images).to(device)
                     loss = criterion(outputs.float(), labels.float())
-                    # loss_without_weights = criterion_without_weights(outputs.float(), labels.float())
+                    loss_without_weights = criterion_without_weights(outputs.float(), labels.float())
 
                     proba = softmax(outputs)                    
                     preds = torch.round(proba)
 
-                    # print(f"Preds: {preds.tolist()}")
-                    # print(f"Labels: {labels.tolist()}")
-                    # print(f"loss with weights: {loss}")
-                    # print(f"loss without weights: {loss_without_weights}")
+                    print(f"Preds: {preds.tolist()}")
+                    print(f"Labels: {labels.tolist()}")
+                    print(f"loss with weights: {loss}")
+                    print(f"loss without weights: {loss_without_weights}")
 
                     # tp, fp, tn, fn
                     if torch.all(torch.eq(preds, labels)):
