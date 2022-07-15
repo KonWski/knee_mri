@@ -196,7 +196,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
             if use_weights:
                 weights = dataset.weights.to(device)
-                criterion = nn.BCEWithLogitsLoss(weights)
+                criterion = nn.BCEWithLogitsLoss(pos_weight=weights)
             
             # drop after debug
             criterion_without_weights = nn.BCEWithLogitsLoss()
