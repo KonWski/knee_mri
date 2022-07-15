@@ -25,31 +25,34 @@ class ViewMriNet(nn.Module):
         self.pretrained_model_type = pretrained_model_type
         self.transfer_learning_type = transfer_learning_type
         self.pretrained_model = get_pretrained_model(pretrained_model_type, self.transfer_learning_type)
-        self.avg_pooling_layer = nn.AdaptiveAvgPool2d((3, 3))
-        self.max_pooling_layer = nn.AdaptiveMaxPool2d((3, 3))
-        self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(18, 2)
+        # self.avg_pooling_layer = nn.AdaptiveAvgPool2d((3, 3))
+        self.avg_pooling_layer = nn.AdaptiveAvgPool2d(1)
+        # self.max_pooling_layer = nn.AdaptiveMaxPool2d((3, 3))
+        # self.flatten = nn.Flatten()
+        # self.classifier = nn.Linear(18, 2)
+        self.classifier = nn.Linear(512, 2)
 
     def forward(self, x):
 
         x = torch.squeeze(x, dim=0)        
         features = self.pretrained_model(x)        
-        # print(f"features size: {features.size()}")
+
         features = torch.unsqueeze(features, dim=0)
-        # print(f"features size: {features.size()}")
+
         features_avg = self.avg_pooling_layer(features)
-        features_max = self.max_pooling_layer(features)
+        # features_max = self.max_pooling_layer(features)
 
-        features_avg = self.flatten(features_avg)
-        features_max = self.flatten(features_max)
-        # print(features_avg)
-        features_avg = torch.squeeze(features_avg, dim=0)
-        features_max = torch.squeeze(features_max, dim=0)
+        # features_avg = self.flatten(features_avg)
+        # features_max = self.flatten(features_max)
 
-        features_concat = torch.cat((features_avg, features_max), dim=0)
-        # print(f"features_concat: {features_concat}")
-        output = self.classifier(features_concat)
-        
+        # features_avg = torch.squeeze(features_avg, dim=0)
+        # features_max = torch.squeeze(features_max, dim=0)
+
+        # features_concat = torch.cat((features_avg, features_max), dim=0)
+
+        # output = self.classifier(features_concat)
+        output = self.classifier(features_avg)
+
         return output
 
 
