@@ -185,7 +185,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
             running_fn = 0
 
             dataset = ViewDataset(root_dir, state, view_type, abnormality_type, use_weights, transform = data_transforms)
-            dataloader = DataLoader(dataset, batch_size, shuffle=False)
+            dataloader = DataLoader(dataset, batch_size, shuffle=True)
             len_dataset = len(dataset)
 
             if use_weights:
