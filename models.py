@@ -28,9 +28,6 @@ class ViewMriNet(nn.Module):
         self.avg_pooling_layer = nn.AdaptiveAvgPool2d((12, 12))
         self.max_pooling_layer = nn.AdaptiveMaxPool2d((12, 12))
         self.flatten = nn.Flatten()
-        self.linear = nn.Linear(144, 72)
-        self.dropout = nn.Dropout(p=0.5, inplace=False)
-        self.activation = nn.ReLU(inplace=True)
         self.classifier = nn.Linear(144, 2)
 
     def forward(self, x):
@@ -45,15 +42,6 @@ class ViewMriNet(nn.Module):
 
         features_avg = self.flatten(features_avg)
         features_max = self.flatten(features_max)
-
-        features_avg = self.linear(features_avg)
-        features_max = self.linear(features_max)
-
-        features_avg = self.dropout(features_avg)
-        features_max = self.dropout(features_max)
-
-        features_avg = self.activation(features_avg)
-        features_max = self.activation(features_max)
 
         features_avg = torch.squeeze(features_avg, dim=0)
         features_max = torch.squeeze(features_max, dim=0)
