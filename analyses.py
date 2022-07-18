@@ -71,9 +71,9 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 # send images, labels to device
                 images, labels = batch
                 labels = labels[0]
-                y.append[labels[0].item()]
+                y.append[labels.item()]
 
-                print(f"y: {labels[0].item()}")
+                print(f"y: {labels.item()}")
                 print(f"labels: {labels}")
 
                 if torch.cuda.is_available():
