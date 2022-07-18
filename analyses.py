@@ -70,11 +70,8 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 # send images, labels to device
                 images, labels = batch
                 labels = labels[0]
-                print(f"labels origin:: {labels}")
-                y.append[labels[1].item()]
-
-                print(f"y: {labels.tolist()[1]}")
-                print(f"labels: {labels}")
+                y.append[int(labels.tolist()[1])]
+                print(f"y: {int(labels.tolist()[1])}")
 
                 if torch.cuda.is_available():
                     labels = labels.to(device)
@@ -89,8 +86,8 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 proba = softmax(outputs)
                 print(f"proba: {proba}")          
                 pred = torch.round(proba)
-                y_pred = int(pred[1].item())
-                print(f"y_pred: {y_pred}")
+                y_pred.append(int(pred.tolist()[1]))
+                print(f"y_pred: {int(pred.tolist()[1])}")
                 print(f"pred: {pred}")
 
                 # tp, fp, tn, fn
