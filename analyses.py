@@ -70,6 +70,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 # send images, labels to device
                 images, labels = batch
                 labels = labels[0]
+                print(labels.tolist())
                 y.append[int(labels.tolist()[1])]
                 print(f"y: {int(labels.tolist()[1])}")
 
