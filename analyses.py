@@ -61,8 +61,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
             len_dataset = len(dataset)
 
             for id, batch in enumerate(dataloader, 0):
-                print(f"id: {id}")
-                print(f"batch: {batch[0]}")
+
                 # progress
                 if id % 100 == 0 and id != 0:
                     progress = round(((id + 1) / len_dataset) * 100, 1)
@@ -71,9 +70,9 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 # send images, labels to device
                 images, labels = batch
                 labels = labels[0]
-                y.append[labels.item()]
+                y.append[labels.tolist()[1]]
 
-                print(f"y: {labels.item()}")
+                print(f"y: {labels.tolist()[1]}")
                 print(f"labels: {labels}")
 
                 if torch.cuda.is_available():
