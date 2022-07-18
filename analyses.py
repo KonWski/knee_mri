@@ -8,6 +8,7 @@ from transforms import test_transforms
 from view_model_training import ViewDataset
 import logging
 from torch.nn.functional import softmax
+from sklearn.metrics import roc_auc_score
 
 def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation_report: bool):
     '''
@@ -51,6 +52,8 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
             running_fp = 0
             running_tn = 0
             running_fn = 0
+            y_pred = []
+            y = []
 
             # dataset, dataloader
             dataset = ViewDataset(root_dir, state, view_type, abnormality_type, transform = test_transforms)
@@ -68,6 +71,9 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 # send images, labels to device
                 images, labels = batch
                 labels = labels[0]
+                y.append[labels[0].item()]
+
+                print(f"y: {labels[0].item()}")
                 print(f"labels: {labels}")
 
                 if torch.cuda.is_available():
@@ -83,6 +89,8 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 proba = softmax(outputs)
                 print(f"proba: {proba}")          
                 pred = torch.round(proba)
+                y_pred = int(pred[1].item())
+                print(f"y_pred: {y_pred}")
                 print(f"pred: {pred}")
 
                 # tp, fp, tn, fn
@@ -115,11 +123,14 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
             precission = round(running_tp / (running_tp + running_fp), 2) if running_tp + running_fp else 0
             recall = round(running_tp / (running_tp + running_fn), 2) if running_tp + running_fn else 0
             f1_score = round((2 * precission * recall) / (precission + recall), 2) if precission + recall else 0
+            roc_auc = roc_auc_score(y, y_pred)
 
             stats[f"{state}_accuracy"] = [accuracy]
             stats[f"{state}_precission"] = [precission]
             stats[f"{state}_recall"] = [recall]
             stats[f"{state}_f1_score"] = [f1_score]
+            stats[f"{state}_roc_auc"] = [roc_auc]
+            
 
         stats["epoch"] = [last_epoch]
         stats = pd.DataFrame(stats)
