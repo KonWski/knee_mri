@@ -1,6 +1,5 @@
 import pandas as pd
 import torch
-from torch import nn
 from torch.optim import SGD
 from torch.utils.data import DataLoader
 from models import ViewMriNet, load_checkpoint
@@ -78,54 +77,33 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
 
                 # calculate loss
                 outputs = model(images)
-                print(f"outputs: {outputs}")
+
                 if torch.cuda.is_available():
                     outputs = outputs.to(device)
                 
-                proba = softmax(outputs)
-                print(f"proba: {proba}")          
+                proba = softmax(outputs)        
                 pred = torch.round(proba)
                 y_pred.append(int(pred.tolist()[1]))
-                print(f"y_pred: {int(pred.tolist()[1])}")
-                print(f"pred: {pred}")
-                print(f"label: {labels.tolist()}")
 
                 # tp, fp, tn, fn
                 if torch.all(torch.eq(pred, labels)):
                     if pred.tolist() == [0, 1]:
-                        print("running_tp += 1")
+                        # print("running_tp += 1")
                         running_tp += 1
                     else:
-                        print("running_tn += 1")
+                        # print("running_tn += 1")
                         running_tn += 1
                 else:
                     if pred.tolist() == [1, 0]:
-                        print("running_fn += 1")
+                        # print("running_fn += 1")
                         running_fn += 1
                     else:
-                        print("running_fp += 1")
-                        running_fp += 1                        
-
-                    # tp, fp, tn, fn
-                    # if torch.all(torch.eq(preds, labels)):
-                    #     if preds.tolist() == [0, 1]:
-                    #         running_tp += 1
-                    #     else:
-                    #         running_tn += 1
-                    # else:
-                    #     if preds.tolist() == [1, 0]:
-                    #         running_fn += 1
-                    #     else:
-                    #         running_fp += 1  
+                        # print("running_fp += 1")
+                        running_fp += 1                         
 
                 if state == "test" and fill_observation_report:
                     ids.append(id)
                     preds.append(pred)
-
-            print(f"running_tp: {running_tp}")
-            print(f"running_tn: {running_tn}")
-            print(f"running_fp: {running_fp}")
-            print(f"running_fn: {running_fn}")
 
             # statistics
             accuracy = round((running_tp + running_tn) / len_dataset, 2)
@@ -140,7 +118,6 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
             stats[f"{state}_f1_score"] = [f1_score]
             stats[f"{state}_roc_auc"] = [roc_auc]
             
-
         stats["epoch"] = [last_epoch]
         stats = pd.DataFrame(stats)
 
