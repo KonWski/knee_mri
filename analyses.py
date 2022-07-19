@@ -70,10 +70,6 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 # send images, labels to device
                 images, labels = batch
                 labels = labels[0]
-                print(labels.tolist())
-                print(type(labels.tolist()))
-                print(labels.tolist()[1])
-                print(type(labels.tolist()[1]))
                 y.append(int(labels.tolist()[1]))
 
                 if torch.cuda.is_available():
@@ -92,6 +88,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 y_pred.append(int(pred.tolist()[1]))
                 print(f"y_pred: {int(pred.tolist()[1])}")
                 print(f"pred: {pred}")
+                print(f"label: {labels.tolist()}")
 
                 # tp, fp, tn, fn
                 if torch.all(torch.eq(pred, labels)):
@@ -108,6 +105,18 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                     else:
                         print("running_fp += 1")
                         running_fp += 1                        
+
+                    # tp, fp, tn, fn
+                    # if torch.all(torch.eq(preds, labels)):
+                    #     if preds.tolist() == [0, 1]:
+                    #         running_tp += 1
+                    #     else:
+                    #         running_tn += 1
+                    # else:
+                    #     if preds.tolist() == [1, 0]:
+                    #         running_fn += 1
+                    #     else:
+                    #         running_fp += 1  
 
                 if state == "test" and fill_observation_report:
                     ids.append(id)
