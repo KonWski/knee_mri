@@ -74,7 +74,7 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
                 print(type(labels.tolist()))
                 print(labels.tolist()[1])
                 print(type(labels.tolist()[1]))
-                y.append[labels.tolist()[1]]
+                y.append(int(labels.tolist()[1]))
 
                 if torch.cuda.is_available():
                     labels = labels.to(device)
