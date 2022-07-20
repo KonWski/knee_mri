@@ -26,9 +26,9 @@ class ViewMriNet(nn.Module):
         self.transfer_learning_type = transfer_learning_type
         self.pretrained_model = get_pretrained_model(pretrained_model_type, self.transfer_learning_type)
         self.avg_pooling_layer = nn.AdaptiveAvgPool2d((6, 6))
-        self.max_pooling_layer = nn.AdaptiveMaxPool2d((6, 6))
+        self.max_pooling_layer = nn.AdaptiveMaxPool2d((3, 3))
         self.flatten = nn.Flatten()
-        self.classifier = nn.Linear(72, 2)
+        self.classifier = nn.Linear(45, 2)
 
     def forward(self, x):
 
@@ -36,7 +36,7 @@ class ViewMriNet(nn.Module):
         features = self.pretrained_model(x)        
 
         features = torch.unsqueeze(features, dim=0)
-        print(f"size: {features.shape}")
+        # print(f"size: {features.shape}")
         features_avg = self.avg_pooling_layer(features)
         features_max = self.max_pooling_layer(features)
 
