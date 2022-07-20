@@ -36,7 +36,7 @@ class ViewMriNet(nn.Module):
         features = self.pretrained_model(x)        
 
         features = torch.unsqueeze(features, dim=0)
-
+        print(f"size: {features.size}")
         features_avg = self.avg_pooling_layer(features)
         features_max = self.max_pooling_layer(features)
 
