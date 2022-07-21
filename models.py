@@ -28,6 +28,7 @@ class ViewMriNet(nn.Module):
         self.avg_pooling_layer = nn.AdaptiveAvgPool2d((6, 6))
         self.max_pooling_layer = nn.AdaptiveMaxPool2d((6, 6))
         self.flatten = nn.Flatten()
+        self.activation = nn.ReLU()
         self.classifier = nn.Linear(72, 2)
 
     def forward(self, x):
@@ -48,7 +49,7 @@ class ViewMriNet(nn.Module):
 
         features_concat = torch.cat((features_avg, features_max), dim=0)
 
-        output = self.classifier(features_concat)
+        output = self.classifier(self.activation(features_concat))
 
         return output
 
