@@ -157,6 +157,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
         exit()
 
     model = ViewMriNet(pretrained_model_type, transfer_learning_type)
+    model = model.to(device)
     # optimizer = SGD(model.parameters(), lr=0.01)
     optimizer = Adam(model.parameters(), lr=1e-5)
     start_epoch = 0
@@ -165,8 +166,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
     if load_model:
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
         start_epoch = last_epoch + 1
-
-    model = model.to(device)
 
     for epoch in range(start_epoch, n_epochs):
 
