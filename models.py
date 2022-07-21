@@ -36,19 +36,20 @@ class ViewMriNet(nn.Module):
         features = self.pretrained_model(x)        
 
         features = torch.unsqueeze(features, dim=0)
-        # print(f"size: {features.shape}")
+        print(f"size: {features.shape}")
         features_avg = self.avg_pooling_layer(features)
-        features_max = self.max_pooling_layer(features)
+        # features_max = self.max_pooling_layer(features)
 
         features_avg = self.flatten(features_avg)
-        features_max = self.flatten(features_max)
+        # features_max = self.flatten(features_max)
 
         features_avg = torch.squeeze(features_avg, dim=0)
-        features_max = torch.squeeze(features_max, dim=0)
+        # features_max = torch.squeeze(features_max, dim=0)
 
-        features_concat = torch.cat((features_avg, features_max), dim=0)
+        # features_concat = torch.cat((features_avg, features_max), dim=0)
 
-        output = self.classifier(features_concat)
+        # output = self.classifier(features_concat)
+        output = self.classifier(features_avg)
 
         return output
 
