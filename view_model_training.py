@@ -222,6 +222,9 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
                     # calculate loss
                     outputs = model(images).to(device)
+                    print(f"outputs: {outputs}")
+                    print(f"labels: {labels}")
+
                     loss = criterion(outputs.float(), labels.float())
                     # loss_without_weights = criterion_without_weights(outputs.float(), labels.float())
 
