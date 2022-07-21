@@ -45,7 +45,8 @@ class ViewMriNet(nn.Module):
 
         features_avg = torch.squeeze(features_avg, dim=0)
         features_max = torch.squeeze(features_max, dim=0)
-
+        print(f"features_avg: {features_avg}")
+        print(f"features_max: {features_max}")
         features_concat = torch.cat((features_avg, features_max), dim=0)
 
         output = self.classifier(features_concat)
