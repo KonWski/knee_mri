@@ -156,7 +156,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
         exit()
 
     model = ViewMriNet(pretrained_model_type, transfer_learning_type)
-    optimizer = SGD(model.parameters(), lr=0.01)
+    optimizer = SGD(model.parameters(), lr=0.001)
     # optimizer = Adam(model.parameters(), lr=0.001)
     start_epoch = 0
 
