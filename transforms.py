@@ -1,5 +1,6 @@
 import torch
 import torchvision.transforms as transforms
+from torchsample.transforms import RandomRotate, RandomTranslate, RandomFlip, ToTensor, Compose, RandomAffine
 
 # transforms.Lambda(lambda x: x.permute(2, 0, 1, 3)),
 # transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1))
@@ -15,9 +16,9 @@ train_transforms = transforms.Compose([
     # transforms.Lambda(lambda x: x.permute(1, 0, 2, 3))
     
     transforms.Lambda(lambda x: torch.Tensor(x)),
-    transforms.RandomRotate(25),
-    transforms.RandomTranslate([0.11, 0.11]),
-    transforms.RandomFlip(),
+    RandomRotate(25),
+    RandomTranslate([0.11, 0.11]),
+    RandomFlip(),
     transforms.Lambda(lambda x: x.repeat(3, 1, 1, 1).permute(1, 0, 2, 3)),
 
     ])
