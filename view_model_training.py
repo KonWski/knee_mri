@@ -4,7 +4,7 @@ import logging
 import torch
 from torch import nn
 from torch.nn.functional import softmax
-from torch.optim import SGD
+from torch.optim import SGD, Adam
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
