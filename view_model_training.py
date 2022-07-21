@@ -157,7 +157,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
         exit()
 
     model = ViewMriNet(pretrained_model_type, transfer_learning_type)
-    optimizer = SGD(model.parameters(), lr=0.01)
+    optimizer = SGD(model.parameters(), lr=0.0005)
     # optimizer = Adam(model.parameters(), lr=0.01, weight_decay=0.1)
     start_epoch = 0
 
@@ -249,7 +249,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
                     if state == "train":
                         loss.backward()
-                        nn.utils.clip_grad_norm_(model.parameters(), 5)
+                        # nn.utils.clip_grad_norm_(model.parameters(), 5)
                         optimizer.step()
 
                 # print statistics
