@@ -11,6 +11,7 @@ import argparse
 from models import ViewMriNet, load_checkpoint, save_checkpoint
 from transforms import test_transforms, train_transforms
 from os.path import exists
+from torch.nn.utils import clip_grad
 
 def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
@@ -156,8 +157,8 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
         exit()
 
     model = ViewMriNet(pretrained_model_type, transfer_learning_type)
-    # optimizer = SGD(model.parameters(), lr=0.01)
-    optimizer = Adam(model.parameters(), lr=0.01, weight_decay=0.1)
+    optimizer = SGD(model.parameters(), lr=0.01)
+    # optimizer = Adam(model.parameters(), lr=0.01, weight_decay=0.1)
     start_epoch = 0
 
     # set weights if training process should be restarted
@@ -248,6 +249,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
                     if state == "train":
                         loss.backward()
+                        nn.utils.clip_grad_norm_(model.parameters(), 5)
                         optimizer.step()
 
                 # print statistics
