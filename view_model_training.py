@@ -157,7 +157,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
         exit()
 
     model = ViewMriNet(pretrained_model_type, transfer_learning_type)
-    optimizer = SGD(model.parameters(), lr=0.0005)
+    optimizer = SGD(model.parameters(), lr=0.01)
     # optimizer = Adam(model.parameters(), lr=0.01, weight_decay=0.1)
     start_epoch = 0
 
@@ -192,7 +192,9 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
             if use_weights:
                 weights = dataset.weights.to(device)
                 criterion = nn.BCEWithLogitsLoss(pos_weight=weights)
-            
+            else:
+                criterion = nn.BCEWithLogitsLoss()
+
             # drop after debug
             # criterion_without_weights = nn.BCEWithLogitsLoss()
 
