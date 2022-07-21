@@ -201,7 +201,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                 model.eval()
 
             for id, batch in enumerate(dataloader, 0):
-                print(f"batch shape: {batch[0].shape}")
+
                 with torch.set_grad_enabled(state == 'train'):
 
                     # progress bar
