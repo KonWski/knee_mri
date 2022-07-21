@@ -248,7 +248,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
                     if state == "train":
                         loss.backward()
-                        # nn.utils.clip_grad_norm_(model.parameters(), 5)
+                        nn.utils.clip_grad_norm_(model.parameters(), 2)
                         optimizer.step()
 
                 # print statistics
