@@ -32,11 +32,12 @@ class ViewMriNet(nn.Module):
 
     def forward(self, x):
 
-        x = torch.squeeze(x, dim=0)        
+        x = torch.squeeze(x, dim=0)
+        print(f"x: {x}")        
         features = self.pretrained_model(x)        
 
         features = torch.unsqueeze(features, dim=0)
-
+        print(f"features: {features}")
         features_avg = self.avg_pooling_layer(features)
         features_max = self.max_pooling_layer(features)
 
