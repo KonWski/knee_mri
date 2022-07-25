@@ -101,7 +101,9 @@ class ViewDataset(data.Dataset):
         image = np.load(f"{self.dataset_path}/{image_index}.npy")
 
         if self.transform:
+            print(f"image shape before transform: {image.shape}")
             image = self.transform(image)
+            print(f"image shape after transform: {image.shape}")
 
         # label encoding
         if label == 1:
