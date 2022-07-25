@@ -32,6 +32,7 @@ class ViewMriNet(nn.Module):
 
     def forward(self, x):
 
+        print(f"x input formard size: {x.size()}")
         x = torch.squeeze(x, dim=0)     
         features = self.pretrained_model(x)        
         print(f"Pretrained model output size {features.size()}")
