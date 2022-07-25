@@ -229,8 +229,11 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     loss = criterion(outputs.float(), labels.float())
                     # print(f"Loss: {loss}")
 
-                    proba = softmax(outputs)                    
+                    print(f"outputs: {outputs}")
+                    proba = softmax(outputs)
+                    print(f"proba: {proba}")                   
                     preds = torch.round(proba)
+                    print(f"preds: {preds}")
 
                     # print(f"Preds: {preds.tolist()}")
                     # print(f"Labels: {labels.tolist()}")
