@@ -32,6 +32,7 @@ def validate_model(
             }
     ids = []
     preds = []
+    labels_list = []
 
     with torch.no_grad():
 
@@ -106,7 +107,8 @@ def validate_model(
 
                 if state == "test" and fill_observation_report:
                     ids.append(id)
-                    preds.append(pred)
+                    preds.append(pred.tolist()[1])
+                    labels_list.append(labels.tolist()[1])
 
             # statistics
             accuracy = round((running_tp + running_tn) / len_dataset, 2)
@@ -125,7 +127,7 @@ def validate_model(
         stats = pd.DataFrame(stats)
 
     # predictions for concrete observations (only for test)
-    observations_report = pd.DataFrame({"id": ids, "preds": preds})
+    observations_report = pd.DataFrame({"id": ids, "preds": preds, "labels": labels_list})
     
     observations_report["pretrained_model_type"] = pretrained_model_type
     observations_report["epoch"] = last_epoch
