@@ -123,10 +123,9 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
         stats = pd.DataFrame(stats)
 
     # predictions for concrete observations (only for test)
-    observations_report = pd.DataFrame({"id": ids, 
-                                        "preds": preds, 
-                                        "pretrained_model_type": [pretrained_model_type]})
+    observations_report = pd.DataFrame({"id": ids, "preds": preds})
     
+    observations_report["pretrained_model_type"] = pretrained_model_type
     observations_report["epoch"] = last_epoch
     observations_report["view_type"] = view_type
     observations_report["abnormality_type"] = abnormality_type
