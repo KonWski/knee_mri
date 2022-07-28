@@ -9,18 +9,20 @@ import logging
 from torch.nn.functional import softmax
 from sklearn.metrics import roc_auc_score
 
-def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation_report: bool):
+def validate_model(
+        checkpoint_path: str, 
+        root_dir: str, 
+        device, 
+        fill_observation_report: bool,
+        abnormality_type: str,
+        view_type: str,
+        pretrained_model_type: str
+        ):
     '''
     - TP, TN, FP TN
     - precission, recall, f1 score
     - info which observation was properly classified
     '''
-
-    # extract from checkpoint_path key infos
-    checkpoint_path_split = checkpoint_path.split("/")
-    abnormality_type = checkpoint_path_split[-2]
-    view_type = checkpoint_path_split[-3]
-    pretrained_model_type = checkpoint_path_split[-4]
 
     # observations, preds, labels
     stats = {
