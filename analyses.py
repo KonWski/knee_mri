@@ -1,6 +1,6 @@
 import pandas as pd
 import torch
-from torch.optim import SGD
+from torch.optim import SGD, Adam
 from torch.utils.data import DataLoader
 from models import ViewMriNet, load_checkpoint
 from transforms import test_transforms
@@ -35,7 +35,8 @@ def validate_model(checkpoint_path: str, root_dir: str, device, fill_observation
 
         # model, transfer  learning type irrelevant
         model = ViewMriNet(pretrained_model_type, "fine_tunning") 
-        optimizer = SGD(model.parameters(), lr=0.01)
+        # optimizer = SGD(model.parameters(), lr=0.01)
+        optimizer = Adam(model.parameters(), lr=1e-5)
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
 
         if torch.cuda.is_available():
