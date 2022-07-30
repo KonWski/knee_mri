@@ -131,13 +131,15 @@ def train_model(device, root_dir: str, abnormality_type: str,  transfer_learning
                         progress_acc = round(running_corrects / (id + 1), 2)
                         logging.info(f"Progress: {progress}%, loss: {progress_loss}, accuracy: {progress_acc}")
                     
-                    images, labels = batch
-                    images = images.to(device)
+                    image_axial, image_coronal, image_sagittal, labels = batch
+                    image_axial = image_axial.to(device)
+                    image_coronal = image_coronal.to(device)
+                    image_sagittal = image_sagittal.to(device)
                     labels = labels[0].to(device)
                     optimizer.zero_grad()
 
                     # calculate loss
-                    outputs = model(images).to(device)
+                    outputs = model(image_axial, image_coronal, image_sagittal).to(device)
                     loss = criterion(outputs.float(), labels.float())
                     proba = softmax(outputs)
                     preds = torch.round(proba)
