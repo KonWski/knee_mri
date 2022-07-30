@@ -3,12 +3,14 @@ import numpy as np
 import logging
 import torch
 from torch import nn
-from torch.optim import SGD
+from torch.optim import Adam
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
 from models import MainMriNet, load_checkpoint, save_checkpoint
 from transforms import test_transforms, train_transforms
+from torch.nn.functional import softmax
+from os.path import exists
 
 def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
@@ -46,26 +48,45 @@ def get_args():
 
 
 def train_model(device, root_dir: str, abnormality_type: str, batch_size: int, 
-        n_epochs: int, load_model: bool = False, model_path: str = None):
+        n_epochs: int, use_weights: bool = False,  load_model: bool = False, model_path: str = None):
     '''
     trains model for recognising selected abnormality on images taken from choosen view
     '''
 
-    # initiate model and optimizer
-    model = MainMriNet(model_path, abnormality_type)
-    model = model.to(device)
-    optimizer = SGD(model.classifier.parameters(), lr=0.01)
-    criterion = nn.BCELoss()
-    start_epoch = 0
+    train_history_path = f"{model_path}/train_history.csv"
 
-    # set weights if training process should be restarted
-    if load_model and model_path is not None:
+    # continue learning from last checkpoint
+    if load_model and exists(train_history_path):
 
         # load checkpoint with highest epoch number
         train_history = pd.read_csv(f"{model_path}/train_history.csv", sep="|")
-        last_train_epoch = train_history[train_history["epoch"] == train_history["epoch"].max()]
-        checkpoint_path = last_train_epoch["checkpoint_path"].iloc[0]
+        last_epoch = train_history["epoch"].max()
+        last_training_history = train_history[train_history["epoch"] == train_history["epoch"].max()]
+        checkpoint_path = last_training_history["checkpoint_path"].iloc[0]
 
+        # check if training already finished
+        if n_epochs <= last_epoch + 1:
+            logging.info("Model already trained for given number of epochs")
+            exit()
+
+    elif load_model and not exists(train_history_path):
+        logging.warning("Further model training impossible - no saved checkpoints")
+        exit()
+
+    # check if start training is possible
+    elif not load_model and exists(train_history_path):
+        logging.warning("""Model already has saved checkpoints. If You wish to rerun whole 
+                           training, delete manually existing files (checkpoints, train_history) and start over""")
+        exit()
+
+    # initiate model and optimizer
+    model = MainMriNet(model_path, abnormality_type)
+    model = model.to(device)
+    optimizer = Adam(model.final_classifier.parameters(), lr=1e-5)
+    start_epoch = 0
+
+    # set weights if training process should be restarted
+    if load_model:
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
         start_epoch = last_epoch + 1
 
@@ -78,15 +99,19 @@ def train_model(device, root_dir: str, abnormality_type: str, batch_size: int,
 
             logging.info(f"Epoch {epoch}, State: {state}")
 
+            # calculated parameters
             running_loss = 0.0
             running_corrects = 0
 
-            # dataset, dataloader
-            dataset = MainDataset(root_dir, state, abnormality_type, transform = data_transforms)
+            dataset = MainDataset(root_dir, state, abnormality_type, use_weights, transform = data_transforms)
             dataloader = DataLoader(dataset, batch_size, shuffle=True)
-
-            # all datasets have the same length
             len_dataset = len(dataset)
+
+            if use_weights:
+                weights = dataset.weights.to(device)
+                criterion = nn.BCEWithLogitsLoss(pos_weight=weights)
+            else:
+                criterion = nn.BCEWithLogitsLoss()
 
             if state == "train":
                 model.train()
@@ -104,17 +129,16 @@ def train_model(device, root_dir: str, abnormality_type: str, batch_size: int,
                         progress_acc = round(running_corrects / (id + 1), 2)
                         logging.info(f"Progress: {progress}%, loss: {progress_loss}, accuracy: {progress_acc}")
                     
-                    image_axial, image_coronal, image_sagittal, labels = batch
-                    image_axial = image_axial.to(device)
-                    image_coronal = image_coronal.to(device)
-                    image_sagittal = image_sagittal.to(device)
-                    labels = labels.to(device)
+                    images, labels = batch
+                    images = images.to(device)
+                    labels = labels[0].to(device)
                     optimizer.zero_grad()
 
                     # calculate loss
-                    outputs = model(image_axial, image_coronal, image_sagittal)                    
+                    outputs = model(images).to(device)
                     loss = criterion(outputs.float(), labels.float())
-                    preds = torch.round(outputs)
+                    proba = softmax(outputs)
+                    preds = torch.round(proba)
 
                     if state == "train":
                         loss.backward()
@@ -122,7 +146,7 @@ def train_model(device, root_dir: str, abnormality_type: str, batch_size: int,
 
                 # print statistics
                 running_loss += loss.item()
-                running_corrects += torch.sum(preds == labels.data).item()
+                running_corrects += torch.sum(torch.argmax(preds) == torch.argmax(labels)).item()
 
             # save and print epoch statistics
             epoch_loss = round(running_loss / len_dataset, 2)
@@ -154,7 +178,7 @@ class MainDataset(data.Dataset):
         set of transformations used for image preprocessing
     '''
 
-    def __init__(self, root_dir, state, abnormality_type, transform=None):
+    def __init__(self, root_dir, state, abnormality_type, use_weights=False, transform=None):
         super().__init__()
         self.root_dir = root_dir
         self.state = state
@@ -166,6 +190,9 @@ class MainDataset(data.Dataset):
                                       names=["id", "abnormality"], 
                                       dtype={"id": str, "abnormality": int})
         self.transform = transform
+        self.use_weights = use_weights
+        if self.use_weights:
+            self.weights = self._get_weights()
 
     def __len__(self):
         return len(self.labels)
@@ -180,12 +207,29 @@ class MainDataset(data.Dataset):
         image_coronal = np.load(f"{self.root_dir}/{self.subfolder}/coronal/{image_index}.npy")
         image_sagittal = np.load(f"{self.root_dir}/{self.subfolder}/sagittal/{image_index}.npy")
 
+        # label encoding
+        if label == 1:
+            label = torch.tensor([0, 1])
+        elif label == 0:
+            label = torch.tensor([1, 0])
+
         if self.transform:
             image_axial = self.transform(image_axial)
             image_coronal = self.transform(image_coronal)
             image_sagittal = self.transform(image_sagittal)
 
         return image_axial, image_coronal, image_sagittal, label
+    
+    def _get_weights(self):
+        '''
+        calculates pos weight for each class according to the suggestion
+        given in: https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html
+        '''
+        pos = len(self.labels[self.labels["abnormality"] == 1])
+        neg = len(self.labels[self.labels["abnormality"] == 0])
+
+        pos_weight = neg / pos
+        return torch.tensor([1, pos_weight])
 
 
 if __name__ == "__main__":
@@ -198,4 +242,5 @@ if __name__ == "__main__":
 
     model = train_model(device, args["root_dir"], args["abnormality_type"], 
                         args["batch_size"], args["n_epochs"], 
-                        args["load_model"], args["model_path"])
+                        args["use_weights"], args["load_model"], 
+                        args["model_path"])

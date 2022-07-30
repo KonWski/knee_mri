@@ -2,12 +2,13 @@ from torchvision import models
 from torch import nn
 import torch
 import yaml
-from torch.optim import SGD
+from torch.optim import Adam
 import logging
 import pandas as pd
 from datetime import datetime
 import os
 from typing import Dict
+from torch.nn.functional import relu
 
 class ViewMriNet(nn.Module):
     '''
@@ -73,7 +74,7 @@ class MainMriNet(nn.Module):
         self.subnet_coronal = ViewMriNet(config["coronal"]["pretrained_model_type"])
         self.subnet_sagittal = ViewMriNet(config["sagittal"]["pretrained_model_type"])
         
-        dummy_optimizer = SGD(self.subnet_axial.classifier.parameters(), lr=0.01)
+        dummy_optimizer = Adam(self.subnet_axial.parameters(), lr=1e-5)
 
         axial_model_path = config["axial"]["checkpoint_path"]
         subnet_axial, optimizer, last_epoch = load_checkpoint(self.subnet_axial, dummy_optimizer, axial_model_path)
@@ -93,7 +94,7 @@ class MainMriNet(nn.Module):
                 param.requires_grad = False
 
         # final classification layer
-        self.classifier = nn.Linear(3, 1)
+        self.final_classifier = nn.Linear(6, 1)
 
     def forward(self, image_axial, image_coronal, image_sagittal):
 
@@ -103,7 +104,7 @@ class MainMriNet(nn.Module):
         output_subnet_sagittal = self.subnet_sagittal(image_sagittal)
 
         output_concat = torch.cat((output_subnet_axial, output_subnet_coronal, output_subnet_sagittal), dim=0)
-        output = torch.sigmoid(self.classifier(output_concat))
+        output = relu(self.final_classifier(output_concat))
 
         return output
 
