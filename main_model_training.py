@@ -84,7 +84,7 @@ def train_model(device, root_dir: str, abnormality_type: str,  transfer_learning
     # initiate model and optimizer
     model = MainMriNet(model_path, abnormality_type, transfer_learning_type)
     model = model.to(device)
-    optimizer = Adam(model.final_classifier.parameters(), lr=1e-5)
+    optimizer = Adam(model.final_classifier.parameters(), lr=0.001)
     start_epoch = 0
 
     # set weights if training process should be restarted
