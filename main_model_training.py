@@ -97,7 +97,7 @@ def train_model(device, root_dir: str, abnormality_type: str,  transfer_learning
         # future checkpoint
         checkpoint = {"epoch": epoch, "pretrained_model_type": "main_model"}
 
-        for state, data_transforms in [("train", train_transforms), ("test", test_transforms)]:
+        for state, data_transforms in [("train", test_transforms), ("test", test_transforms)]:
 
             logging.info(f"Epoch {epoch}, State: {state}")
 
@@ -121,7 +121,7 @@ def train_model(device, root_dir: str, abnormality_type: str,  transfer_learning
                 model.eval()
 
             for id, batch in enumerate(dataloader, 0):
-                print(f"id: {id}")
+                # print(f"id: {id}")
                 with torch.set_grad_enabled(state == 'train'):
 
                     # progress bar
@@ -136,18 +136,18 @@ def train_model(device, root_dir: str, abnormality_type: str,  transfer_learning
                     image_coronal = image_coronal.to(device)
                     image_sagittal = image_sagittal.to(device)
                     labels = labels[0].to(device)
-                    print(f"labels: {labels}")
+                    # print(f"labels: {labels}")
                     optimizer.zero_grad()
 
                     # calculate loss
                     outputs = model(image_axial, image_coronal, image_sagittal).to(device)
-                    print(f"outputs: {outputs}")
+                    # print(f"outputs: {outputs}")
                     loss = criterion(outputs.float(), labels.float())
-                    print(f"loss: {loss}")
+                    # print(f"loss: {loss}")
                     proba = softmax(outputs)
-                    print(f"proba: {proba}")
+                    # print(f"proba: {proba}")
                     preds = torch.round(proba)
-                    print(f"preds: {preds}")
+                    # print(f"preds: {preds}")
 
                     if state == "train":
                         loss.backward()
