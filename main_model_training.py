@@ -18,8 +18,9 @@ def get_args():
     parser.add_argument('--root_dir', type=str, help='root_dir/view_type')
     parser.add_argument('--batch_size', type=int, help='Number of images in batch')
     parser.add_argument('--n_epochs', type=int, help='Number of epochs')
-    parser.add_argument('--load_model', type=str, default="N", help='Y -> continue learning using state_dict, train_history in save_path') 
-    parser.add_argument('--model_path', type=str, help='path ot yaml configuration file, save/load model state dictionary')
+    parser.add_argument('--load_model', type=str, default="N", help='Y -> continue learning using state_dict, train_history in save_path')
+    parser.add_argument('--use_weights', type=str, help='weight observations in loss function, weights calculated automatically')
+    parser.add_argument('--model_path', type=str, help='path to yaml configuration file, save/load model state dictionary')
     args = vars(parser.parse_args())
     
     # directory safe check
