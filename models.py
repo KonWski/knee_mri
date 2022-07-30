@@ -104,7 +104,7 @@ class MainMriNet(nn.Module):
         output_subnet_sagittal = self.subnet_sagittal(image_sagittal)
 
         output_concat = torch.cat((output_subnet_axial, output_subnet_coronal, output_subnet_sagittal), dim=0)
-        output = self.final_classifier(relu(output_concat))
+        output = self.final_classifier(output_concat)
 
         return output
 
