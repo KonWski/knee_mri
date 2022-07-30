@@ -16,6 +16,7 @@ def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
     parser.add_argument('--abnormality_type', type=str, help='abnormal/acl/meniscus')
     parser.add_argument('--root_dir', type=str, help='root_dir/view_type')
+    parser.add_argument('--transfer_learning_type', type=str, default="feature_extraction", help='feature_extraction/fine_tunning')
     parser.add_argument('--batch_size', type=int, help='Number of images in batch')
     parser.add_argument('--n_epochs', type=int, help='Number of epochs')
     parser.add_argument('--load_model', type=str, default="N", help='Y -> continue learning using state_dict, train_history in save_path')
@@ -48,7 +49,7 @@ def get_args():
     return args
 
 
-def train_model(device, root_dir: str, abnormality_type: str, batch_size: int, 
+def train_model(device, root_dir: str, abnormality_type: str,  transfer_learning_type: str, batch_size: int, 
         n_epochs: int, use_weights: bool = False,  load_model: bool = False, model_path: str = None):
     '''
     trains model for recognising selected abnormality on images taken from choosen view
@@ -81,7 +82,7 @@ def train_model(device, root_dir: str, abnormality_type: str, batch_size: int,
         exit()
 
     # initiate model and optimizer
-    model = MainMriNet(model_path, abnormality_type)
+    model = MainMriNet(model_path, abnormality_type, transfer_learning_type)
     model = model.to(device)
     optimizer = Adam(model.final_classifier.parameters(), lr=1e-5)
     start_epoch = 0
@@ -242,6 +243,6 @@ if __name__ == "__main__":
     logging.info(f"Device: {device}")
 
     model = train_model(device, args["root_dir"], args["abnormality_type"], 
-                        args["batch_size"], args["n_epochs"], 
-                        args["use_weights"], args["load_model"], 
+                        args["transfer_learning_type"], args["batch_size"], 
+                        args["n_epochs"], args["use_weights"], args["load_model"], 
                         args["model_path"])

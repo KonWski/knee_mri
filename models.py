@@ -64,15 +64,15 @@ class MainMriNet(nn.Module):
     ----------
 
     '''
-    def __init__(self, model_path: str, abnormality_type: str):
+    def __init__(self, model_path: str, abnormality_type: str, transfer_learning_type: str):
         super().__init__()
 
         config = self.load_final_model_config(model_path, abnormality_type)
 
         # load template models        
-        self.subnet_axial = ViewMriNet(config["axial"]["pretrained_model_type"])
-        self.subnet_coronal = ViewMriNet(config["coronal"]["pretrained_model_type"])
-        self.subnet_sagittal = ViewMriNet(config["sagittal"]["pretrained_model_type"])
+        self.subnet_axial = ViewMriNet(config["axial"]["pretrained_model_type"], transfer_learning_type)
+        self.subnet_coronal = ViewMriNet(config["coronal"]["pretrained_model_type"], transfer_learning_type)
+        self.subnet_sagittal = ViewMriNet(config["sagittal"]["pretrained_model_type"], transfer_learning_type)
         
         dummy_optimizer = Adam(self.subnet_axial.parameters(), lr=1e-5)
 
