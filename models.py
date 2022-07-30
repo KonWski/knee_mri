@@ -94,7 +94,7 @@ class MainMriNet(nn.Module):
                 param.requires_grad = False
 
         # final classification layer
-        self.final_classifier = nn.Linear(6, 1)
+        self.final_classifier = nn.Linear(6, 2)
 
     def forward(self, image_axial, image_coronal, image_sagittal):
 
