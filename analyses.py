@@ -163,7 +163,7 @@ def validate_main_model(
         # model, transfer  learning type irrelevant
         model = MainMriNet(model_path, abnormality_type, "fine_tunning")
 
-        optimizer = Adam(model.parameters(), lr=1e-5)
+        optimizer = Adam(model.final_classifier.parameters(), lr=1e-5)
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
 
         if torch.cuda.is_available():
