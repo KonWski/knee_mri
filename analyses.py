@@ -162,7 +162,6 @@ def validate_main_model(
 
         # model, transfer  learning type irrelevant
         model = MainMriNet(model_path, abnormality_type, "fine_tunning")
-
         optimizer = Adam(model.final_classifier.parameters(), lr=1e-5)
         model, optimizer, last_epoch = load_checkpoint(model, optimizer, checkpoint_path)
 
@@ -195,6 +194,8 @@ def validate_main_model(
                     logging.info(f"Progress: {progress}%")
 
                 # send images, labels to device
+                print(batch)
+                print(f"len batch: {len(batch)}")
                 image_axial, image_coronal, image_sagittal, labels = batch
                 image_axial = image_axial.to(device)
                 image_coronal = image_coronal.to(device)
