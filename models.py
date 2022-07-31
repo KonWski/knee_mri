@@ -74,18 +74,20 @@ class MainMriNet(nn.Module):
         self.subnet_coronal = ViewMriNet(config["coronal"]["pretrained_model_type"], transfer_learning_type)
         self.subnet_sagittal = ViewMriNet(config["sagittal"]["pretrained_model_type"], transfer_learning_type)
         
-        dummy_optimizer = Adam(self.subnet_axial.parameters(), lr=1e-5)
+        dummy_optimizer_axial = Adam(self.subnet_axial.parameters(), lr=1e-5)
+        dummy_optimizer_coronal = Adam(self.subnet_coronal.parameters(), lr=1e-5)
+        dummy_optimizer_sagittal = Adam(self.subnet_sagittal.parameters(), lr=1e-5)
 
         axial_model_path = config["axial"]["checkpoint_path"]
-        subnet_axial, optimizer, last_epoch = load_checkpoint(self.subnet_axial, dummy_optimizer, axial_model_path)
+        subnet_axial, optimizer, last_epoch = load_checkpoint(self.subnet_axial, dummy_optimizer_axial, axial_model_path)
         self.subnet_axial = subnet_axial
 
         coronal_model_path = config["coronal"]["checkpoint_path"]
-        subnet_coronal, optimizer, last_epoch = load_checkpoint(self.subnet_coronal, dummy_optimizer, coronal_model_path)
+        subnet_coronal, optimizer, last_epoch = load_checkpoint(self.subnet_coronal, dummy_optimizer_coronal, coronal_model_path)
         self.subnet_coronal = subnet_coronal
 
         sagittal_model_path = config["sagittal"]["checkpoint_path"]
-        subnet_sagittal, optimizer, last_epoch = load_checkpoint(self.subnet_sagittal, dummy_optimizer, sagittal_model_path)
+        subnet_sagittal, optimizer, last_epoch = load_checkpoint(self.subnet_sagittal, dummy_optimizer_sagittal, sagittal_model_path)
         self.subnet_sagittal = subnet_sagittal
         
         # turn off  grads in all parameters 
