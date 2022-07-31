@@ -195,7 +195,6 @@ def validate_main_model(
 
                 # send images, labels to device
                 print(batch)
-                print(f"len batch: {len(batch)}")
                 image_axial, image_coronal, image_sagittal, labels = batch
                 image_axial = image_axial.to(device)
                 image_coronal = image_coronal.to(device)
