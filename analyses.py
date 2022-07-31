@@ -248,9 +248,7 @@ def validate_main_model(
     # predictions for concrete observations (only for test)
     observations_report = pd.DataFrame({"id": ids, "preds": preds, "labels": labels_list})
     
-    observations_report["pretrained_model_type"] = pretrained_model_type
     observations_report["epoch"] = last_epoch
-    observations_report["view_type"] = view_type
     observations_report["abnormality_type"] = abnormality_type
 
     return stats, observations_report
