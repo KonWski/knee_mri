@@ -194,7 +194,6 @@ def validate_main_model(
                     logging.info(f"Progress: {progress}%")
 
                 # send images, labels to device
-                print(batch)
                 image_axial, image_coronal, image_sagittal, labels = batch
                 image_axial = image_axial.to(device)
                 image_coronal = image_coronal.to(device)
