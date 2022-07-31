@@ -195,16 +195,15 @@ def validate_main_model(
                     logging.info(f"Progress: {progress}%")
 
                 # send images, labels to device
-                images, labels = batch
-                labels = labels[0]
+                image_axial, image_coronal, image_sagittal, labels = batch
+                image_axial = image_axial.to(device)
+                image_coronal = image_coronal.to(device)
+                image_sagittal = image_sagittal.to(device)
+                labels = labels[0].to(device)
                 y.append(int(labels.tolist()[1]))
 
-                if torch.cuda.is_available():
-                    labels = labels.to(device)
-                    images = images.to(device)
-
                 # calculate loss
-                outputs = model(images)
+                outputs = model(image_axial, image_coronal, image_sagittal).to(device)
 
                 if torch.cuda.is_available():
                     outputs = outputs.to(device)
