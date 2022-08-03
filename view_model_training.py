@@ -4,14 +4,13 @@ import logging
 import torch
 from torch import nn
 from torch.nn.functional import softmax
-from torch.optim import SGD, Adam
+from torch.optim import Adam
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 import argparse
 from models import ViewMriNet, load_checkpoint, save_checkpoint
 from transforms import test_transforms, train_transforms
 from os.path import exists
-from torch.nn.utils import clip_grad
 
 def get_args():
     parser = argparse.ArgumentParser(description='Process paramaters for model learning')
@@ -101,9 +100,7 @@ class ViewDataset(data.Dataset):
         image = np.load(f"{self.dataset_path}/{image_index}.npy")
 
         if self.transform:
-            # print(f"image shape before transform: {image.shape}")
             image = self.transform(image)
-            # print(f"image shape after transform: {image.shape}")
 
         # label encoding
         if label == 1:
@@ -160,7 +157,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
 
     model = ViewMriNet(pretrained_model_type, transfer_learning_type)
     model = model.to(device)
-    # optimizer = SGD(model.parameters(), lr=0.01)
     optimizer = Adam(model.parameters(), lr=1e-5)
     start_epoch = 0
 
@@ -181,10 +177,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
             # calculated parameters
             running_loss = 0.0
             running_corrects = 0
-            # running_tp = 0
-            # running_fp = 0
-            # running_tn = 0
-            # running_fn = 0
 
             dataset = ViewDataset(root_dir, state, view_type, abnormality_type, use_weights, transform = data_transforms)
             dataloader = DataLoader(dataset, batch_size, shuffle=True)
@@ -197,7 +189,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                 criterion = nn.BCEWithLogitsLoss()
 
             # drop after debug
-            # criterion_without_weights = nn.BCEWithLogitsLoss()
+            criterion_without_weights = nn.BCEWithLogitsLoss()
 
             if state == "train":
                 model.train()
@@ -214,10 +206,6 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                         progress_loss =  round(running_loss / (id + 1), 2)
                         progress_acc = round(running_corrects / (id + 1), 2)
                         logging.info(f"Progress: {progress}%, loss: {progress_loss}, accuracy: {progress_acc}")
-                        # print(f"running_tp: {running_tp}")
-                        # print(f"running_tn: {running_tn}")
-                        # print(f"running_fp: {running_fp}")
-                        # print(f"running_fn: {running_fn}")
                     
                     images, labels = batch
                     images = images.to(device)
@@ -227,32 +215,20 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     # calculate loss
                     outputs = model(images).to(device)
                     loss = criterion(outputs.float(), labels.float())
-                    # print(f"Loss: {loss}")
-
-                    # print(f"outputs: {outputs}")
+                    loss_without_weights = criterion_without_weights(outputs.float(), labels.float())
+                    print(f"Loss: {loss}")
+                    print(f"loss_without_weights: {loss_without_weights}")
+                            
+                    print(f"outputs: {outputs}")
                     proba = softmax(outputs)
                     # print(f"proba: {proba}")                   
                     preds = torch.round(proba)
-                    # print(f"preds: {preds}")
 
-                    # print(f"Preds: {preds.tolist()}")
-                    # print(f"Labels: {labels.tolist()}")
-
-                    # tp, fp, tn, fn
-                    # if torch.all(torch.eq(preds, labels)):
-                    #     if preds.tolist() == [0, 1]:
-                    #         running_tp += 1
-                    #     else:
-                    #         running_tn += 1
-                    # else:
-                    #     if preds.tolist() == [1, 0]:
-                    #         running_fn += 1
-                    #     else:
-                    #         running_fp += 1  
+                    print(f"Preds: {preds.tolist()}")
+                    print(f"Labels: {labels.tolist()}")
 
                     if state == "train":
                         loss.backward()
-                        # nn.utils.clip_grad_norm_(model.parameters(), 2)
                         optimizer.step()
 
                 # print statistics
