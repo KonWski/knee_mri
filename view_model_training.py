@@ -220,7 +220,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     proba = softmax(outputs)
                     preds = torch.round(proba)
 
-                    if preds.tolist() == [0, 1]:
+                    if labels.tolist() == [0, 1] and preds.tolist() == [0, 1]:
                         print(f"Loss: {loss}")
                         print(f"loss_without_weights: {loss_without_weights}")                            
                         print(f"outputs: {outputs}")
