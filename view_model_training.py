@@ -216,16 +216,17 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                     outputs = model(images).to(device)
                     loss = criterion(outputs.float(), labels.float())
                     loss_without_weights = criterion_without_weights(outputs.float(), labels.float())
-                    print(f"Loss: {loss}")
-                    print(f"loss_without_weights: {loss_without_weights}")
-                            
-                    print(f"outputs: {outputs}")
+
                     proba = softmax(outputs)
-                    # print(f"proba: {proba}")                   
                     preds = torch.round(proba)
 
-                    print(f"Preds: {preds.tolist()}")
-                    print(f"Labels: {labels.tolist()}")
+                    if preds.tolist() == [0, 1]:
+                        print(f"Loss: {loss}")
+                        print(f"loss_without_weights: {loss_without_weights}")                            
+                        print(f"outputs: {outputs}")
+                        print(f"Preds: {preds.tolist()}")
+                        print(f"Labels: {labels.tolist()}")
+
 
                     if state == "train":
                         loss.backward()
