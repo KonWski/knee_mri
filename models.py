@@ -217,7 +217,7 @@ def save_checkpoint(checkpoint: dict, model_path: str):
     checkpoint_path = f"{model_path}/{checkpoint['pretrained_model_type']}_{checkpoint['epoch']}"
 
     # save checkpoint
-    torch.save(checkpoint, checkpoint_path)
+    # torch.save(checkpoint, checkpoint_path)
 
     # new row in train history
     new_log = pd.DataFrame({
