@@ -97,7 +97,7 @@ def train_model(device, root_dir: str, abnormality_type: str,  transfer_learning
         # future checkpoint
         checkpoint = {"epoch": epoch, "pretrained_model_type": "main_model"}
 
-        for state, data_transforms in [("train", test_transforms), ("test", test_transforms)]:
+        for state, data_transforms in [("train", train_transforms), ("test", test_transforms)]:
 
             logging.info(f"Epoch {epoch}, State: {state}")
 
