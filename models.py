@@ -33,11 +33,13 @@ class ViewMriNet(nn.Module):
 
     def forward(self, x):
 
-        print(f"x input formard size: {x.size()}")
-        x = torch.squeeze(x, dim=0)     
+        print(f"Pretrained model input size: {x.size()}")
+        x = torch.squeeze(x, dim=0) 
+        print(f"Pretrained model input (after squeeze) size: {x.size()}")
         features = self.pretrained_model(x)        
         print(f"Pretrained model output size {features.size()}")
         features = torch.unsqueeze(features, dim=0)
+        print(f"features unsqueezed size {features.size()}")
 
         features_avg = self.avg_pooling_layer(features)
         features_max = self.max_pooling_layer(features)
