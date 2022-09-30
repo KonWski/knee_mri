@@ -99,8 +99,12 @@ class ViewDataset(data.Dataset):
         image_index = image_row["id"]
         image = np.load(f"{self.dataset_path}/{image_index}.npy")
 
+        print(f"Image shape before transform: {image.shape}")
+
         if self.transform:
             image = self.transform(image)
+
+        print(f"Image shape after transform: {image.size}")
 
         # label encoding
         if label == 1:
@@ -208,6 +212,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                         logging.info(f"Progress: {progress}%, loss: {progress_loss}, accuracy: {progress_acc}")
                     
                     images, labels = batch
+                    print(f"images shape: {images.size}")
                     images = images.to(device)
                     labels = labels[0].to(device)
                     optimizer.zero_grad()
