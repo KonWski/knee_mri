@@ -104,7 +104,7 @@ class ViewDataset(data.Dataset):
         if self.transform:
             image = self.transform(image)
 
-        print(f"Image shape after transform: {image.size}")
+        print(f"Image shape after transform: {image.size()}")
 
         # label encoding
         if label == 1:
@@ -212,7 +212,7 @@ def train_model(device, root_dir: str, view_type: str, abnormality_type: str, tr
                         logging.info(f"Progress: {progress}%, loss: {progress_loss}, accuracy: {progress_acc}")
                     
                     images, labels = batch
-                    print(f"images shape: {images.size}")
+                    print(f"images shape: {images.size()}")
                     images = images.to(device)
                     labels = labels[0].to(device)
                     optimizer.zero_grad()
